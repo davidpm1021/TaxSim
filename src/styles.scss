@@ -1,0 +1,1028 @@
+/* NGPF Tax Simulation Theme
+   Based on NGPF Website Style Guide
+   ============================================ */
+
+/* Google Fonts: Montserrat + PT Sans for headers */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=PT+Sans:wght@400;700&display=swap');
+
+/* ============================================
+   CSS CUSTOM PROPERTIES (NGPF Color Palette)
+   ============================================ */
+:root {
+  /* Primary Colors (from NGPF Style Guide) */
+  --ngpf-royal-blue: #1f3b9b;     /* Primary buttons, links, headers */
+  --ngpf-navy: #0b1541;           /* Dark backgrounds, footers */
+  --ngpf-bright-blue: #275ce4;    /* Interactive elements, hover states */
+  --ngpf-sky-blue: #1db8e8;       /* Highlights, tags, tooltips */
+  --ngpf-gold: #f4ad00;           /* Warnings, progress, CTA buttons */
+  --ngpf-orange: #f78219;         /* Alerts, attention-grabbing elements */
+
+  /* Light/Neutral Shades */
+  --ngpf-soft-blue: #edfaff;      /* Backgrounds, containers, cards */
+  --ngpf-light-gray-blue: #d2d8e9; /* Form fields, inactive states, borders */
+  --ngpf-ice-blue: #d2eff9;       /* Tooltips, backgrounds, accent fills */
+
+  /* Legacy aliases for backwards compatibility */
+  --ngpf-navy-dark: var(--ngpf-navy);
+  --ngpf-navy-light: var(--ngpf-bright-blue);
+  --ngpf-blue-light: var(--ngpf-sky-blue);
+  --ngpf-blue-pale: var(--ngpf-soft-blue);
+  --ngpf-orange-dark: var(--ngpf-orange);
+
+  /* Neutrals */
+  --ngpf-gray-dark: #444d65;
+  --ngpf-gray: #7f8ba9;
+  --ngpf-gray-medium: #9b9b9b;
+  --ngpf-gray-light: #cfd0d1;
+  --ngpf-gray-pale: #edeef0;
+  --ngpf-white: #ffffff;
+
+  /* Semantic Colors */
+  --ngpf-success: #10b981;
+  --ngpf-success-light: #d1fae5;
+  --ngpf-warning: var(--ngpf-gold);
+  --ngpf-warning-light: #fef3c7;
+  --ngpf-error: #D32F2F;          /* Per style guide validation color */
+  --ngpf-error-light: #fee2e2;
+
+  /* Typography */
+  --font-heading: 'PT Sans', sans-serif;
+  --font-body: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family: var(--font-body);
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 1rem;      /* 16px */
+  --spacing-lg: 1.5rem;    /* 24px */
+  --spacing-xl: 2rem;      /* 32px */
+  --spacing-2xl: 3rem;     /* 48px */
+
+  /* Border Radius (per NGPF: ~6px for buttons) */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(11, 21, 65, 0.08);
+  --shadow-md: 1px 1px 5px rgba(11, 21, 65, 0.1);
+  --shadow-lg: 0 4px 20px rgba(11, 21, 65, 0.12);
+  --shadow-xl: 0 8px 30px rgba(11, 21, 65, 0.15);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* Touch targets (Gen Z mobile-first: min 44x44px) */
+  --touch-target-min: 44px;
+}
+
+/* ============================================
+   RESET & BASE STYLES
+   ============================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 18px;              /* Regular paragraph: 18px per style guide */
+  line-height: 1.4;             /* 140% line height per style guide */
+  color: var(--ngpf-navy);
+  background: var(--ngpf-soft-blue);
+  min-height: 100vh;
+}
+
+/* ============================================
+   TYPOGRAPHY (NGPF Style Guide)
+   H1: PT Sans Bold, 48pt, Mixed Case
+   H2-H6: Montserrat Bold
+   ============================================ */
+h1 {
+  font-family: var(--font-heading);
+  font-size: 3rem;              /* 48px */
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ngpf-navy);
+}
+
+h2 {
+  font-family: var(--font-body);
+  font-size: 2.25rem;           /* 36px */
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ngpf-navy);
+}
+
+h3 {
+  font-family: var(--font-body);
+  font-size: 1.5rem;            /* 24px */
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ngpf-navy);
+}
+
+h4 {
+  font-family: var(--font-body);
+  font-size: 1.25rem;           /* 20px */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  color: var(--ngpf-navy);
+}
+
+h5 {
+  font-family: var(--font-body);
+  font-size: 1.125rem;          /* 18px */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  color: var(--ngpf-navy);
+}
+
+h6 {
+  font-family: var(--font-body);
+  font-size: 1rem;              /* 16px */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  color: var(--ngpf-navy);
+}
+
+p {
+  margin-bottom: var(--spacing-md);
+  color: var(--ngpf-gray-dark);
+  font-size: 1.125rem;          /* 18px regular paragraph */
+  line-height: 1.4;
+}
+
+.text-large {
+  font-size: 1.25rem;           /* 20px large paragraph */
+  line-height: 1.4;
+}
+
+.text-bold {
+  font-weight: 700;
+}
+
+a {
+  color: var(--ngpf-royal-blue);
+  text-decoration: none;
+  font-size: 1.25rem;           /* 20px link text per style guide */
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--ngpf-bright-blue);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--ngpf-bright-blue);
+    outline-offset: 2px;
+  }
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+input,
+select,
+textarea {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--ngpf-light-gray-blue);
+  border-radius: var(--radius-sm);
+  background: var(--ngpf-white);
+  color: var(--ngpf-navy);
+  transition: all var(--transition-fast);
+  width: 100%;
+  min-height: var(--touch-target-min);  /* Mobile-friendly touch targets */
+
+  &:hover:not(:disabled) {
+    border-color: var(--ngpf-bright-blue);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--ngpf-bright-blue);
+    box-shadow: 0 0 0 3px rgba(39, 92, 228, 0.2);
+  }
+
+  &::placeholder {
+    color: var(--ngpf-gray-medium);
+  }
+
+  &:disabled {
+    background: var(--ngpf-gray-pale);
+    border-color: var(--ngpf-gray-light);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+}
+
+/* Error state for form fields */
+input.error,
+select.error,
+textarea.error {
+  border-color: var(--ngpf-error);
+
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.2);
+  }
+}
+
+label {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 1rem;
+  margin-bottom: var(--spacing-sm);
+  color: var(--ngpf-navy);
+}
+
+/* Required field indicator */
+label.required::after {
+  content: ' (required)';
+  font-weight: 400;
+  font-size: 0.875rem;
+  color: var(--ngpf-gray);
+}
+
+/* Validation message */
+.validation-message {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.875rem;
+  color: var(--ngpf-error);
+  margin-top: var(--spacing-xs);
+
+  &::before {
+    content: '!';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    background: var(--ngpf-error);
+    color: white;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+  }
+}
+
+/* Help text */
+.help-text {
+  font-size: 0.875rem;
+  color: var(--ngpf-gray);
+  margin-top: var(--spacing-xs);
+}
+
+/* ============================================
+   BUTTONS (NGPF Style Guide)
+   Font: Montserrat Bold, Title Case
+   Border Radius: ~6px
+   ============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.875rem 1.5rem;
+  border-radius: var(--radius-sm);  /* 6px per NGPF */
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+  min-height: var(--touch-target-min);  /* 44px touch target */
+  min-width: var(--touch-target-min);
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--ngpf-bright-blue);
+    outline-offset: 2px;
+  }
+}
+
+/* Primary button: Bright Blue background (per NGPF) */
+.btn-primary {
+  background: var(--ngpf-bright-blue);
+  color: var(--ngpf-white);
+
+  &:hover:not(:disabled) {
+    background: var(--ngpf-royal-blue);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+/* CTA button: Gold background (per NGPF for CTAs) */
+.btn-cta {
+  background: var(--ngpf-gold);
+  color: var(--ngpf-navy);
+
+  &:hover:not(:disabled) {
+    background: var(--ngpf-orange);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(244, 173, 0, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+/* Secondary/Outline button */
+.btn-secondary {
+  background: transparent;
+  color: var(--ngpf-bright-blue);
+  border: 2px solid var(--ngpf-bright-blue);
+
+  &:hover:not(:disabled) {
+    background: var(--ngpf-soft-blue);
+    border-color: var(--ngpf-royal-blue);
+    color: var(--ngpf-royal-blue);
+  }
+}
+
+/* Small button variant */
+.btn-small {
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  min-height: 36px;
+}
+
+/* Ghost button */
+.btn-ghost {
+  background: transparent;
+  color: var(--ngpf-navy);
+
+  &:hover:not(:disabled) {
+    background: var(--ngpf-gray-pale);
+  }
+}
+
+/* Link-style button */
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--ngpf-royal-blue);
+  padding: 0;
+  font-weight: 500;
+  min-height: auto;
+  min-width: auto;
+
+  &:hover {
+    color: var(--ngpf-bright-blue);
+    text-decoration: underline;
+  }
+}
+
+/* Anchor link button (per NGPF) */
+.btn-anchor {
+  background: var(--ngpf-soft-blue);
+  color: var(--ngpf-royal-blue);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background: var(--ngpf-ice-blue);
+  }
+}
+
+/* ============================================
+   RADIO BUTTONS & CHECKBOXES
+   ============================================ */
+input[type="radio"],
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  padding: 0;
+  cursor: pointer;
+  accent-color: var(--ngpf-bright-blue);
+}
+
+/* Custom radio/checkbox styling */
+.radio-group,
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.radio-item,
+.checkbox-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  min-height: var(--touch-target-min);
+
+  &:hover {
+    background: var(--ngpf-soft-blue);
+  }
+
+  label {
+    margin-bottom: 0;
+    cursor: pointer;
+  }
+}
+
+/* ============================================
+   LABELS / TAGS (NGPF Style Guide)
+   Montserrat Bold, ALL CAPS, 14-16px
+   ============================================ */
+.label {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.875rem;          /* 14px */
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.label-default {
+  background: transparent;
+  border: 1px solid var(--ngpf-gray);
+  color: var(--ngpf-gray);
+}
+
+.label-filled {
+  background: var(--ngpf-royal-blue);
+  color: var(--ngpf-white);
+}
+
+.label-success {
+  background: var(--ngpf-success);
+  color: var(--ngpf-white);
+}
+
+.label-warning {
+  background: var(--ngpf-gold);
+  color: var(--ngpf-navy);
+}
+
+.label-error {
+  background: var(--ngpf-error);
+  color: var(--ngpf-white);
+}
+
+.label-large {
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+}
+
+/* ============================================
+   NOTIFICATION BANNERS (NGPF Style Guide)
+   ============================================ */
+.notification {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--ngpf-white);
+  border-left: 4px solid;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.notification-positive {
+  border-left-color: var(--ngpf-bright-blue);
+
+  .notification-icon {
+    color: var(--ngpf-bright-blue);
+  }
+}
+
+.notification-warning {
+  border-left-color: var(--ngpf-orange);
+
+  .notification-icon {
+    color: var(--ngpf-orange);
+  }
+}
+
+.notification-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+}
+
+.notification-dismiss {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  color: var(--ngpf-gray);
+  font-size: 1.25rem;
+  line-height: 1;
+
+  &:hover {
+    color: var(--ngpf-navy);
+  }
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+.card {
+  background: var(--ngpf-white);
+  border-radius: var(--radius-lg);  /* 12px per NGPF carousel cards */
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.card-elevated {
+  box-shadow: var(--shadow-lg);
+}
+
+/* ============================================
+   MODALS (NGPF Style Guide)
+   Sizes: Small ~320px, Medium ~480px, Large ~700px
+   ============================================ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 21, 65, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--ngpf-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-small { width: 320px; }
+.modal-medium { width: 480px; }
+.modal-large { width: 700px; }
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--ngpf-gray-light);
+}
+
+.modal-title {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  color: var(--ngpf-gray);
+  font-size: 1.5rem;
+  line-height: 1;
+
+  &:hover {
+    color: var(--ngpf-navy);
+  }
+}
+
+.modal-body {
+  padding: var(--spacing-lg);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-top: 1px solid var(--ngpf-gray-light);
+}
+
+/* ============================================
+   ACCORDION (NGPF Style Guide)
+   ============================================ */
+.accordion {
+  border: 1px solid var(--ngpf-gray-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.accordion-item {
+  border-bottom: 1px solid var(--ngpf-gray-light);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--ngpf-white);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--ngpf-royal-blue);
+  text-align: left;
+  transition: background var(--transition-fast);
+  min-height: var(--touch-target-min);
+
+  &:hover {
+    background: var(--ngpf-soft-blue);
+  }
+
+  &[aria-expanded="true"] {
+    .accordion-icon {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.accordion-icon {
+  transition: transform var(--transition-normal);
+  font-size: 1.25rem;
+}
+
+.accordion-panel {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--ngpf-soft-blue);
+}
+
+/* ============================================
+   TABS (NGPF Style Guide)
+   ============================================ */
+.tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  border-bottom: 2px solid var(--ngpf-gray-light);
+}
+
+.tab {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--ngpf-soft-blue);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ngpf-royal-blue);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: all var(--transition-fast);
+  min-height: var(--touch-target-min);
+
+  &:hover:not(.tab-active) {
+    background: var(--ngpf-ice-blue);
+  }
+
+  &.tab-active {
+    background: var(--ngpf-bright-blue);
+    color: var(--ngpf-white);
+  }
+
+  /* Error indicator */
+  &.tab-error::after {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--ngpf-error);
+    border-radius: 50%;
+    margin-left: var(--spacing-sm);
+  }
+}
+
+.tab-panel {
+  padding: var(--spacing-lg);
+}
+
+/* ============================================
+   PROGRESS BAR (Gamification)
+   ============================================ */
+.progress-bar {
+  height: 12px;
+  background: var(--ngpf-gray-light);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ngpf-bright-blue), var(--ngpf-sky-blue));
+  border-radius: 6px;
+  transition: width var(--transition-slow);
+}
+
+.progress-bar-gold .progress-bar-fill {
+  background: linear-gradient(90deg, var(--ngpf-gold), var(--ngpf-orange));
+}
+
+/* Progress with label */
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ngpf-navy);
+}
+
+/* Step progress indicator */
+.step-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.step-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ngpf-gray-light);
+  transition: all var(--transition-normal);
+
+  &.completed {
+    background: var(--ngpf-success);
+  }
+
+  &.current {
+    background: var(--ngpf-bright-blue);
+    transform: scale(1.3);
+  }
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--ngpf-gray-light);
+
+  &.completed {
+    background: var(--ngpf-success);
+  }
+}
+
+/* ============================================
+   ACHIEVEMENTS / BADGES (Gamification)
+   ============================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: linear-gradient(135deg, var(--ngpf-gold), var(--ngpf-orange));
+  color: var(--ngpf-navy);
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-md);
+}
+
+.badge-icon {
+  font-size: 1.25rem;
+}
+
+/* XP indicator */
+.xp-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--ngpf-soft-blue);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--ngpf-bright-blue);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.text-navy { color: var(--ngpf-navy); }
+.text-royal { color: var(--ngpf-royal-blue); }
+.text-bright { color: var(--ngpf-bright-blue); }
+.text-gray { color: var(--ngpf-gray-dark); }
+.text-gold { color: var(--ngpf-gold); }
+.text-orange { color: var(--ngpf-orange); }
+.text-success { color: var(--ngpf-success); }
+.text-warning { color: var(--ngpf-warning); }
+.text-error { color: var(--ngpf-error); }
+
+.bg-navy { background: var(--ngpf-navy); }
+.bg-royal { background: var(--ngpf-royal-blue); }
+.bg-soft { background: var(--ngpf-soft-blue); }
+.bg-ice { background: var(--ngpf-ice-blue); }
+.bg-pale { background: var(--ngpf-gray-pale); }
+.bg-white { background: var(--ngpf-white); }
+
+.font-light { font-weight: 300; }
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+/* Spacing utilities */
+.mt-1 { margin-top: var(--spacing-sm); }
+.mt-2 { margin-top: var(--spacing-md); }
+.mt-3 { margin-top: var(--spacing-lg); }
+.mt-4 { margin-top: var(--spacing-xl); }
+.mb-1 { margin-bottom: var(--spacing-sm); }
+.mb-2 { margin-bottom: var(--spacing-md); }
+.mb-3 { margin-bottom: var(--spacing-lg); }
+.mb-4 { margin-bottom: var(--spacing-xl); }
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ngpf-gray-pale);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ngpf-gray-light);
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--ngpf-gray);
+  }
+}
+
+/* ============================================
+   FOCUS VISIBLE (Accessibility)
+   Minimum 4.5:1 contrast ratio
+   ============================================ */
+:focus-visible {
+  outline: 3px solid var(--ngpf-bright-blue);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid var(--ngpf-gold);
+  outline-offset: 2px;
+}
+
+/* Skip link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  padding: var(--spacing-md);
+  background: var(--ngpf-navy);
+  color: var(--ngpf-white);
+  z-index: 9999;
+  transition: top var(--transition-fast);
+
+  &:focus {
+    top: 0;
+  }
+}
+
+/* ============================================
+   SELECTION
+   ============================================ */
+::selection {
+  background: var(--ngpf-sky-blue);
+  color: var(--ngpf-white);
+}
+
+/* ============================================
+   RESPONSIVE LAYOUT (NGPF Breakpoints)
+   ≤ 480px: Single column
+   481–768px: Compact grid/flex
+   ≥ 769px: Full grid layout
+   ============================================ */
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .modal-small,
+  .modal-medium,
+  .modal-large {
+    width: calc(100vw - 32px);
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  a {
+    color: black;
+    text-decoration: underline;
+  }
+
+  .btn {
+    display: none;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION (Accessibility)
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
