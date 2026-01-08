@@ -59,10 +59,11 @@ describe('ReviewComponent', () => {
     taxReturn.income.form1099s = overrides.form1099s ?? [];
     taxReturn.deductions.useStandardDeduction = overrides.useStandardDeduction ?? true;
     taxReturn.deductions.mortgageInterest = overrides.mortgageInterest ?? 0;
-    taxReturn.deductions.studentLoanInterest = overrides.studentLoanInterest ?? 0;
     taxReturn.deductions.saltTaxes = overrides.saltTaxes ?? 0;
     taxReturn.deductions.charitableContributions = overrides.charitableContributions ?? 0;
     taxReturn.deductions.medicalExpenses = overrides.medicalExpenses ?? 0;
+    // Student loan interest is now an above-the-line adjustment
+    taxReturn.adjustments.studentLoanInterest = overrides.studentLoanInterest ?? 0;
     taxReturn.credits.childTaxCredit = overrides.childTaxCredit ?? 0;
     taxReturn.credits.earnedIncomeCredit = overrides.earnedIncomeCredit ?? 0;
     return taxReturn;
@@ -107,9 +108,9 @@ describe('ReviewComponent', () => {
     };
 
     mockTaxCalculation = {
+      // Student loan interest is now an above-the-line adjustment, not itemized
       calculateItemizedDeductions: jest.fn((deductions: any, agi: number) => {
         return deductions.mortgageInterest +
-          Math.min(deductions.studentLoanInterest, 2500) +
           Math.min(deductions.saltTaxes, 10000) +
           deductions.charitableContributions +
           Math.max(0, deductions.medicalExpenses - agi * 0.075);

@@ -4,8 +4,28 @@ export const routes: Routes = [
   { path: '', redirectTo: 'welcome', pathMatch: 'full' },
   {
     path: 'welcome',
-    loadComponent: () =>
-      import('./features/welcome/welcome.component').then((m) => m.WelcomeComponent),
+    children: [
+      { path: '', redirectTo: 'landing', pathMatch: 'full' },
+      {
+        path: 'landing',
+        loadComponent: () =>
+          import('./features/welcome/welcome.component').then((m) => m.WelcomeComponent),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/welcome/student-profile/student-profile.component').then(
+            (m) => m.StudentProfileComponent
+          ),
+      },
+      {
+        path: 'documents',
+        loadComponent: () =>
+          import('./features/welcome/document-checklist/document-checklist.component').then(
+            (m) => m.DocumentChecklistComponent
+          ),
+      },
+    ],
   },
   {
     path: 'personal-info',
@@ -74,6 +94,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/income/form-1099-entry/form-1099-entry.component').then(
             (m) => m.Form1099EntryComponent
+          ),
+      },
+      {
+        path: '1099-int',
+        loadComponent: () =>
+          import('./features/income/form-1099-int-entry/form-1099-int-entry.component').then(
+            (m) => m.Form1099INTEntryComponent
+          ),
+      },
+      {
+        path: '1099-int/:index',
+        loadComponent: () =>
+          import('./features/income/form-1099-int-entry/form-1099-int-entry.component').then(
+            (m) => m.Form1099INTEntryComponent
           ),
       },
       {

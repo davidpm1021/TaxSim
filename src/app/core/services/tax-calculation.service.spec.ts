@@ -164,32 +164,22 @@ describe('TaxCalculationService', () => {
   });
 
   describe('calculateItemizedDeductions', () => {
+    // Note: Student loan interest is now an above-the-line adjustment (reduces AGI),
+    // not an itemized deduction. It's handled in calculateFullReturn, not here.
+
     it('should sum all deductions', () => {
       const result = service.calculateItemizedDeductions({
         mortgageInterest: 5000,
-        studentLoanInterest: 1000,
         saltTaxes: 8000,
         charitableContributions: 2000,
         medicalExpenses: 0,
       }, 50000);
-      expect(result).toBe(16000);
-    });
-
-    it('should cap student loan interest at $2,500', () => {
-      const result = service.calculateItemizedDeductions({
-        mortgageInterest: 0,
-        studentLoanInterest: 5000, // Should cap at $2,500
-        saltTaxes: 0,
-        charitableContributions: 0,
-        medicalExpenses: 0,
-      }, 50000);
-      expect(result).toBe(2500);
+      expect(result).toBe(15000);
     });
 
     it('should cap SALT at $10,000', () => {
       const result = service.calculateItemizedDeductions({
         mortgageInterest: 0,
-        studentLoanInterest: 0,
         saltTaxes: 15000, // Should cap at $10,000
         charitableContributions: 0,
         medicalExpenses: 0,
@@ -202,7 +192,6 @@ describe('TaxCalculationService', () => {
       // Medical = $5,000, deductible = $5,000 - $3,750 = $1,250
       const result = service.calculateItemizedDeductions({
         mortgageInterest: 0,
-        studentLoanInterest: 0,
         saltTaxes: 0,
         charitableContributions: 0,
         medicalExpenses: 5000,
@@ -215,7 +204,6 @@ describe('TaxCalculationService', () => {
       // Medical = $2,000, below threshold, deductible = $0
       const result = service.calculateItemizedDeductions({
         mortgageInterest: 0,
-        studentLoanInterest: 0,
         saltTaxes: 0,
         charitableContributions: 0,
         medicalExpenses: 2000,
@@ -225,19 +213,17 @@ describe('TaxCalculationService', () => {
 
     it('should apply all caps together', () => {
       // Mortgage: $10,000 (no cap)
-      // Student loan: $3,000 -> $2,500 (capped)
       // SALT: $12,000 -> $10,000 (capped)
       // Charity: $1,000 (no cap)
       // Medical: $8,000 on $50,000 AGI -> $8,000 - $3,750 = $4,250
-      // Total: $10,000 + $2,500 + $10,000 + $1,000 + $4,250 = $27,750
+      // Total: $10,000 + $10,000 + $1,000 + $4,250 = $25,250
       const result = service.calculateItemizedDeductions({
         mortgageInterest: 10000,
-        studentLoanInterest: 3000,
         saltTaxes: 12000,
         charitableContributions: 1000,
         medicalExpenses: 8000,
       }, 50000);
-      expect(result).toBe(27750);
+      expect(result).toBe(25250);
     });
   });
 
@@ -500,20 +486,24 @@ describe('TaxCalculationService', () => {
       }];
       taxReturn.deductions = {
         mortgageInterest: 12000,
-        studentLoanInterest: 2500,
         saltTaxes: 10000,
         charitableContributions: 3000,
         medicalExpenses: 0,
         useStandardDeduction: false, // Force itemized
       };
+      // Student loan interest is now an above-the-line adjustment
+      taxReturn.adjustments.studentLoanInterest = 2500;
 
       const result = service.calculateFullReturn(taxReturn);
 
-      // Itemized: $12,000 + $2,500 + $10,000 + $3,000 = $27,500
-      expect(result.itemizedDeductionAmount).toBe(27500);
+      // Itemized: $12,000 + $10,000 + $3,000 = $25,000 (student loan not included)
+      // AGI: $100,000 - $2,500 = $97,500
+      expect(result.itemizedDeductionAmount).toBe(25000);
       expect(result.deductionUsed).toBe('itemized');
-      expect(result.finalDeductionAmount).toBe(27500);
+      expect(result.finalDeductionAmount).toBe(25000);
+      // Taxable: $97,500 - $25,000 = $72,500
       expect(result.taxableIncome).toBe(72500);
+      expect(result.adjustedGrossIncome).toBe(97500);
     });
 
     it('should handle return with both W-2 and 1099 income', () => {

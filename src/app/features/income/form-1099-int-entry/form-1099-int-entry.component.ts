@@ -1,25 +1,24 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationService, SessionStorageService, ValidationService } from '@core/services';
-import { Form1099NEC, createEmptyForm1099NEC } from '@core/models';
-import { SELF_EMPLOYMENT_TAX } from '@core/constants/tax-year-2025';
+import { Form1099INT, createEmptyForm1099INT } from '@core/models';
 import {
   NavigationHeaderComponent,
   EducationalModalComponent,
   ContinueButtonComponent,
-  Form1099NECFormComponent,
+  Form1099INTFormComponent,
   ValidationMessageComponent,
 } from '@shared/components';
 
 @Component({
-  selector: 'app-form-1099-entry',
+  selector: 'app-form-1099-int-entry',
   standalone: true,
   imports: [
     CommonModule,
     NavigationHeaderComponent,
     EducationalModalComponent,
     ContinueButtonComponent,
-    Form1099NECFormComponent,
+    Form1099INTFormComponent,
     ValidationMessageComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,35 +28,35 @@ import {
     <div class="page-container">
       <div class="content-card">
         <header class="section-header">
-          <h1>Enter your 1099-NEC income</h1>
+          <h1>Enter your 1099-INT income</h1>
           <button class="help-trigger" (click)="openHelpModal()" type="button">
             <span class="help-icon">?</span>
-            <span>About self-employment income</span>
+            <span>About interest income</span>
           </button>
         </header>
 
         <p class="instruction">
-          Enter income from each 1099-NEC form you received for freelance work, gig jobs, or other
-          self-employment. Fill in the form below just like your actual 1099-NEC.
+          Enter interest income from each 1099-INT form you received from banks or other financial
+          institutions. Box 1 shows your total taxable interest.
         </p>
 
         <div class="form-list">
-          @for (form of form1099s(); track form.id; let i = $index) {
+          @for (form of form1099Ints(); track form.id; let i = $index) {
             <div class="form-wrapper">
-              @if (form1099s().length > 1) {
+              @if (form1099Ints().length > 1) {
                 <div class="form-actions">
-                  <span class="form-label">1099-NEC #{{ i + 1 }}</span>
+                  <span class="form-label">1099-INT #{{ i + 1 }}</span>
                   <button
                     type="button"
                     class="remove-btn"
                     (click)="removeForm(form.id)"
-                    aria-label="Remove this 1099-NEC"
+                    aria-label="Remove this 1099-INT"
                   >
                     Remove
                   </button>
                 </div>
               }
-              <app-form-1099-nec-form
+              <app-form-1099-int-form
                 [form1099]="form"
                 (form1099Change)="updateForm(form.id, $event)"
               />
@@ -65,26 +64,32 @@ import {
           }
 
           <button type="button" class="add-btn" (click)="addForm()">
-            + Add Another 1099-NEC
+            + Add Another 1099-INT
           </button>
         </div>
 
         <div class="summary-section">
           <div class="summary-bar">
             <div class="summary-item">
-              <span class="summary-label">Total 1099 Income:</span>
-              <span class="summary-value">{{ formatCurrency(totalIncome()) }}</span>
+              <span class="summary-label">Total Interest Income:</span>
+              <span class="summary-value">{{ formatCurrency(totalInterest()) }}</span>
             </div>
+            @if (totalTaxExempt() > 0) {
+              <div class="summary-item secondary">
+                <span class="summary-label">Tax-Exempt Interest:</span>
+                <span class="summary-value">{{ formatCurrency(totalTaxExempt()) }}</span>
+              </div>
+            }
           </div>
 
-          @if (totalIncome() > 0) {
-            <div class="se-tax-notice">
-              <div class="notice-icon">!</div>
+          @if (totalFederalWithheld() > 0) {
+            <div class="withholding-notice">
+              <div class="notice-icon">✓</div>
               <div class="notice-content">
-                <strong>Self-Employment Tax Applies</strong>
+                <strong>Tax Already Withheld</strong>
                 <p>
-                  You'll owe an estimated <strong>{{ formatCurrency(estimatedSETax()) }}</strong> in
-                  self-employment tax ({{ seRate }}% for Social Security and Medicare).
+                  <strong>{{ formatCurrency(totalFederalWithheld()) }}</strong> was already
+                  withheld from your interest income and sent to the IRS.
                 </p>
               </div>
             </div>
@@ -105,29 +110,31 @@ import {
       </div>
     </div>
 
-    <app-educational-modal #helpModal [title]="'Understanding 1099-NEC Income'">
+    <app-educational-modal #helpModal [title]="'Understanding Interest Income'">
       <p>
-        A <strong>1099-NEC form</strong> reports income you earned as an independent contractor,
-        freelancer, or gig worker. Unlike W-2 income, no taxes are withheld—you receive the full
-        amount.
+        A <strong>1099-INT form</strong> reports interest income you earned from banks, credit
+        unions, or other financial institutions. This is usually from savings accounts, CDs
+        (certificates of deposit), or money market accounts.
       </p>
-      <p><strong>Key differences from W-2:</strong></p>
+      <p><strong>Key boxes on form 1099-INT:</strong></p>
       <ul>
         <li>
-          <strong>No tax withheld</strong> — You're responsible for paying all taxes yourself.
+          <strong>Box 1 (Interest income)</strong> — Your total taxable interest. This gets added
+          to your other income.
         </li>
         <li>
-          <strong>Self-employment tax</strong> — You owe 15.3% extra for Social Security and
-          Medicare (employers normally pay half of this for W-2 workers).
+          <strong>Box 3 (U.S. Savings Bonds)</strong> — Interest from Treasury bonds, which may
+          be exempt from state taxes.
         </li>
         <li>
-          <strong>Quarterly payments</strong> — If you earn significant 1099 income, you may need
-          to pay estimated taxes quarterly.
+          <strong>Box 8 (Tax-exempt interest)</strong> — Interest from municipal bonds that's
+          usually not taxed federally.
         </li>
       </ul>
       <p>
         <em>
-          Good news: Half of your self-employment tax is deductible, reducing your taxable income!
+          Most students receive 1099-INT forms from their savings accounts. Even small amounts
+          (over $10) must be reported!
         </em>
       </p>
     </app-educational-modal>
@@ -257,12 +264,20 @@ import {
       background: var(--ngpf-blue-pale);
       border-radius: var(--radius-sm);
       margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
     }
 
     .summary-item {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+
+      &.secondary {
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+      }
     }
 
     .summary-label {
@@ -276,12 +291,12 @@ import {
       color: var(--ngpf-navy-light);
     }
 
-    .se-tax-notice {
+    .withholding-notice {
       display: flex;
       gap: 1rem;
       padding: 1rem 1.25rem;
-      background: var(--ngpf-warning-light);
-      border: 1px solid var(--ngpf-warning);
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
       border-radius: var(--radius-sm);
     }
 
@@ -292,8 +307,8 @@ import {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--ngpf-warning);
-      color: #856404;
+      background: #10b981;
+      color: white;
       border-radius: 50%;
       font-weight: 700;
       font-size: 0.875rem;
@@ -304,14 +319,14 @@ import {
 
       strong {
         display: block;
-        color: #856404;
+        color: #047857;
         margin-bottom: 0.25rem;
       }
 
       p {
         margin: 0;
         font-size: 0.875rem;
-        color: #856404;
+        color: #047857;
       }
     }
 
@@ -324,59 +339,60 @@ import {
     }
   `,
 })
-export class Form1099EntryComponent {
+export class Form1099INTEntryComponent {
   private readonly navigation = inject(NavigationService);
   private readonly sessionStorage = inject(SessionStorageService);
   private readonly validation = inject(ValidationService);
 
   readonly helpModal = viewChild.required<EducationalModalComponent>('helpModal');
 
-  readonly seRate = Math.round(SELF_EMPLOYMENT_TAX.rate * 100 * 10) / 10;
-
-  readonly form1099s = computed(() => {
-    const formList = this.sessionStorage.taxReturn().income.form1099s;
+  readonly form1099Ints = computed(() => {
+    const formList = this.sessionStorage.taxReturn().income.form1099Ints;
     if (formList.length === 0) {
-      const empty = createEmptyForm1099NEC();
+      const empty = createEmptyForm1099INT();
       this.sessionStorage.updateIncome((income) => ({
         ...income,
-        form1099s: [empty],
+        form1099Ints: [empty],
       }));
       return [empty];
     }
     return formList;
   });
 
-  readonly totalIncome = computed(() => {
-    return this.form1099s().reduce((sum, form) => sum + (form.nonemployeeCompensation || 0), 0);
+  readonly totalInterest = computed(() => {
+    return this.form1099Ints().reduce((sum, form) => sum + (form.interestIncome || 0), 0);
   });
 
-  readonly estimatedSETax = computed(() => {
-    const netEarnings = this.totalIncome() * SELF_EMPLOYMENT_TAX.netEarningsMultiplier;
-    return netEarnings * SELF_EMPLOYMENT_TAX.rate;
+  readonly totalTaxExempt = computed(() => {
+    return this.form1099Ints().reduce((sum, form) => sum + (form.taxExemptInterest || 0), 0);
+  });
+
+  readonly totalFederalWithheld = computed(() => {
+    return this.form1099Ints().reduce((sum, form) => sum + (form.federalWithheld || 0), 0);
   });
 
   readonly canContinue = computed(() => {
-    const formList = this.form1099s();
+    const formList = this.form1099Ints();
     return formList.length > 0 && formList.every((form) =>
       this.validation.validateRequired(form.payerName, 'Payer name').isValid &&
-      form.nonemployeeCompensation > 0
+      form.interestIncome > 0
     );
   });
 
   readonly validationWarning = computed(() => {
-    const formList = this.form1099s();
+    const formList = this.form1099Ints();
     if (formList.length === 0) return null;
 
     for (let i = 0; i < formList.length; i++) {
       const form = formList[i];
-      const formLabel = formList.length > 1 ? `1099-NEC #${i + 1}: ` : '';
+      const formLabel = formList.length > 1 ? `1099-INT #${i + 1}: ` : '';
 
       if (!this.validation.validateRequired(form.payerName, 'Payer name').isValid) {
-        return `${formLabel}Payer name is required`;
+        return `${formLabel}Payer/bank name is required`;
       }
 
-      if (!form.nonemployeeCompensation || form.nonemployeeCompensation <= 0) {
-        return `${formLabel}Enter income amount (Box 1)`;
+      if (!form.interestIncome || form.interestIncome <= 0) {
+        return `${formLabel}Enter interest income amount (Box 1)`;
       }
     }
 
@@ -398,38 +414,36 @@ export class Form1099EntryComponent {
   addForm(): void {
     this.sessionStorage.updateIncome((income) => ({
       ...income,
-      form1099s: [...income.form1099s, createEmptyForm1099NEC()],
+      form1099Ints: [...income.form1099Ints, createEmptyForm1099INT()],
     }));
   }
 
   removeForm(id: string): void {
     this.sessionStorage.updateIncome((income) => ({
       ...income,
-      form1099s: income.form1099s.filter((form) => form.id !== id),
+      form1099Ints: income.form1099Ints.filter((form) => form.id !== id),
     }));
   }
 
-  updateForm(id: string, changes: Partial<Form1099NEC>): void {
+  updateForm(id: string, changes: Partial<Form1099INT>): void {
     this.sessionStorage.updateIncome((income) => ({
       ...income,
-      form1099s: income.form1099s.map((form) =>
+      form1099Ints: income.form1099Ints.map((form) =>
         form.id === id ? { ...form, ...changes } : form
       ),
     }));
   }
 
   onContinue(): void {
-    // Navigate to interest income if selected, otherwise summary
-    if (this.sessionStorage.taxReturn().income.hasInterestIncome) {
-      this.navigation.navigateTo('/income/1099-int');
-    } else {
-      this.navigation.navigateTo('/income/summary');
-    }
+    this.navigation.navigateTo('/income/summary');
   }
 
   onBack(): void {
-    // Go back to W-2 entry if user has W-2 income, otherwise income types
-    if (this.sessionStorage.taxReturn().income.hasW2Income) {
+    // Go back to 1099-NEC if user has that income, then W-2, then income types
+    const income = this.sessionStorage.taxReturn().income;
+    if (income.has1099Income) {
+      this.navigation.navigateTo('/income/1099');
+    } else if (income.hasW2Income) {
       this.navigation.navigateTo('/income/w2');
     } else {
       this.navigation.navigateTo('/income/types');

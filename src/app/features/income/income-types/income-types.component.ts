@@ -64,6 +64,22 @@ import {
             </div>
             <span class="check-mark">✓</span>
           </label>
+
+          <label class="income-option" [class.selected]="hasInterest()">
+            <input
+              type="checkbox"
+              [checked]="hasInterest()"
+              (change)="toggleInterest()"
+            />
+            <div class="option-icon">INT</div>
+            <div class="option-content">
+              <span class="option-label">1099-INT Interest</span>
+              <span class="option-description">
+                Interest earned from bank accounts, CDs, or investments
+              </span>
+            </div>
+            <span class="check-mark">✓</span>
+          </label>
         </div>
 
         <app-continue-button
@@ -74,7 +90,7 @@ import {
       </div>
     </div>
 
-    <app-educational-modal #helpModal [title]="'W-2 vs 1099 Income'">
+    <app-educational-modal #helpModal [title]="'Types of Income'">
       <p>
         <strong>W-2 Income</strong> is what you earn as an employee. Your employer withholds taxes
         from each paycheck and sends them to the IRS for you. At tax time, you report what you
@@ -87,9 +103,14 @@ import {
         tax (15.3%) to cover Social Security and Medicare.
       </p>
       <p>
+        <strong>1099-INT Income</strong> is interest you earn from bank accounts, savings accounts,
+        or CDs. Banks report this to the IRS if you earn more than $10 in interest. This income is
+        taxed as regular income.
+      </p>
+      <p>
         <em>
           Example: If you work at a coffee shop, you get a W-2. If you mow lawns for neighbors,
-          that's 1099 income.
+          that's 1099-NEC income. If you have a savings account that earns interest, that's 1099-INT income.
         </em>
       </p>
     </app-educational-modal>
@@ -315,7 +336,8 @@ export class IncomeTypesComponent {
 
   readonly hasW2 = computed(() => this.sessionStorage.taxReturn().income.hasW2Income);
   readonly has1099 = computed(() => this.sessionStorage.taxReturn().income.has1099Income);
-  readonly hasAnyIncome = computed(() => this.hasW2() || this.has1099());
+  readonly hasInterest = computed(() => this.sessionStorage.taxReturn().income.hasInterestIncome);
+  readonly hasAnyIncome = computed(() => this.hasW2() || this.has1099() || this.hasInterest());
 
   toggleW2(): void {
     this.sessionStorage.updateIncome((income) => ({
@@ -333,6 +355,14 @@ export class IncomeTypesComponent {
     }));
   }
 
+  toggleInterest(): void {
+    this.sessionStorage.updateIncome((income) => ({
+      ...income,
+      hasInterestIncome: !income.hasInterestIncome,
+      form1099Ints: !income.hasInterestIncome && income.form1099Ints.length === 0 ? [] : income.form1099Ints,
+    }));
+  }
+
   openHelpModal(): void {
     this.helpModal().open();
   }
@@ -342,6 +372,8 @@ export class IncomeTypesComponent {
       this.navigation.navigateTo('/income/w2');
     } else if (this.has1099()) {
       this.navigation.navigateTo('/income/1099');
+    } else if (this.hasInterest()) {
+      this.navigation.navigateTo('/income/1099-int');
     }
   }
 

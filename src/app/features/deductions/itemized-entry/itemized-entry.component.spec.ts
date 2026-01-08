@@ -27,6 +27,11 @@ describe('ItemizedEntryComponent', () => {
         const newDeductions = fn(current.deductions);
         taxReturnSignal.set({ ...current, deductions: newDeductions });
       }),
+      updateAdjustments: jest.fn((fn) => {
+        const current = taxReturnSignal();
+        const newAdjustments = fn(current.adjustments);
+        taxReturnSignal.set({ ...current, adjustments: newAdjustments });
+      }),
     };
 
     const currentSection = signal(SECTIONS[3]); // Deductions section
@@ -148,14 +153,20 @@ describe('ItemizedEntryComponent', () => {
 
   it('should calculate total itemized deductions correctly', () => {
     component.mortgageInterest.set(5000);
-    component.studentLoanInterest.set(2000);
+    component.studentLoanInterest.set(2000); // Above-the-line, reduces AGI but not in itemized total
     component.saltTaxes.set(8000);
     component.charitableContributions.set(1000);
     component.medicalExpenses.set(5000);
 
-    // Expected: 5000 + 2000 + 8000 + 1000 + 1250 (medical above 7.5%) = 17250
-    const medicalDeductible = 5000 - (50000 * 0.075);
-    const expected = 5000 + 2000 + 8000 + 1000 + medicalDeductible;
+    // Student loan is above-the-line (adjustment), not in itemized total
+    // But it DOES reduce AGI for medical expense threshold calculation
+    // AGI = 50000 - 2000 = 48000
+    // Medical threshold = 48000 * 0.075 = 3600
+    // Deductible medical = 5000 - 3600 = 1400
+    // Total itemized = 5000 + 8000 + 1000 + 1400 = 15400
+    const agi = 50000 - 2000; // Student loan reduces AGI
+    const medicalDeductible = 5000 - (agi * 0.075);
+    const expected = 5000 + 8000 + 1000 + medicalDeductible;
     expect(component.totalItemized()).toBe(expected);
   });
 
@@ -167,7 +178,7 @@ describe('ItemizedEntryComponent', () => {
 
   it('should save deductions and navigate on continue', () => {
     component.mortgageInterest.set(5000);
-    component.studentLoanInterest.set(1000);
+    component.studentLoanInterest.set(1000); // Saved to adjustments
     component.saltTaxes.set(3000);
     component.charitableContributions.set(500);
     component.medicalExpenses.set(0);
@@ -175,6 +186,7 @@ describe('ItemizedEntryComponent', () => {
     component.onContinue();
 
     expect(mockSessionStorage.updateDeductions).toHaveBeenCalled();
+    expect(mockSessionStorage.updateAdjustments).toHaveBeenCalled(); // Student loan goes to adjustments
     expect(mockNavigation.navigateTo).toHaveBeenCalledWith('/deductions/comparison');
   });
 

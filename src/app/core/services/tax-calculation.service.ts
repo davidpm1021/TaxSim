@@ -93,6 +93,8 @@ export class TaxCalculationService {
 
   /**
    * Calculate itemized deductions with caps applied
+   * Note: Student loan interest is an above-the-line deduction (adjustment to AGI),
+   * not an itemized deduction, so it's not included here.
    */
   calculateItemizedDeductions(
     deductions: Omit<Deductions, 'useStandardDeduction'>,
@@ -102,9 +104,6 @@ export class TaxCalculationService {
 
     // Mortgage interest - no cap
     total += deductions.mortgageInterest;
-
-    // Student loan interest - capped at $2,500
-    total += Math.min(deductions.studentLoanInterest, DEDUCTION_LIMITS.studentLoanInterest);
 
     // SALT - capped at $10,000
     total += Math.min(deductions.saltTaxes, DEDUCTION_LIMITS.saltTaxes);
@@ -206,7 +205,7 @@ export class TaxCalculationService {
    * Calculate complete tax return
    */
   calculateFullReturn(taxReturn: TaxReturn): TaxCalculation {
-    const { personalInfo, income, deductions } = taxReturn;
+    const { personalInfo, income, deductions, adjustments } = taxReturn;
 
     // Calculate total income
     const totalW2Wages = income.w2s.reduce((sum, w2) => sum + w2.wagesTips, 0);
@@ -218,8 +217,16 @@ export class TaxCalculationService {
     const selfEmploymentTax = seResult.selfEmploymentTax;
     const selfEmploymentTaxDeduction = seResult.deductiblePortion;
 
-    // Calculate AGI
-    const adjustedGrossIncome = Math.round((grossIncome - selfEmploymentTaxDeduction) * 100) / 100;
+    // Calculate student loan interest deduction (above-the-line, capped at $2,500)
+    const studentLoanDeduction = Math.min(
+      adjustments.studentLoanInterest || 0,
+      DEDUCTION_LIMITS.studentLoanInterest
+    );
+
+    // Calculate AGI (includes SE tax deduction and student loan interest)
+    const adjustedGrossIncome = Math.round(
+      (grossIncome - selfEmploymentTaxDeduction - studentLoanDeduction) * 100
+    ) / 100;
 
     // Calculate earned income for dependent standard deduction calculation
     const earnedIncome = totalW2Wages + total1099Income;
@@ -234,7 +241,6 @@ export class TaxCalculationService {
     const itemizedDeductionAmount = this.calculateItemizedDeductions(
       {
         mortgageInterest: deductions.mortgageInterest,
-        studentLoanInterest: deductions.studentLoanInterest,
         saltTaxes: deductions.saltTaxes,
         charitableContributions: deductions.charitableContributions,
         medicalExpenses: deductions.medicalExpenses,

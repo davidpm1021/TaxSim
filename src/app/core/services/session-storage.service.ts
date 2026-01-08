@@ -61,6 +61,14 @@ export class SessionStorageService {
     });
   }
 
+  updateAdjustments(updater: (current: TaxReturn['adjustments']) => TaxReturn['adjustments']): void {
+    const current = this._taxReturn();
+    this.save({
+      ...current,
+      adjustments: updater(current.adjustments),
+    });
+  }
+
   updateDeductions(updater: (current: TaxReturn['deductions']) => TaxReturn['deductions']): void {
     const current = this._taxReturn();
     this.save({

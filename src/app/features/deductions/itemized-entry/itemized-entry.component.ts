@@ -78,10 +78,11 @@ type ModalTopic =
             />
           </div>
 
-          <!-- Student Loan Interest -->
-          <div class="form-group">
+          <!-- Student Loan Interest (Above-the-line deduction) -->
+          <div class="form-group special-deduction">
             <div class="label-row">
               <label for="studentLoan">Student Loan Interest</label>
+              <span class="above-line-badge">Above-the-line</span>
               <button
                 class="info-btn"
                 (click)="openModal('student-loan')"
@@ -92,7 +93,7 @@ type ModalTopic =
               </button>
             </div>
             <p class="field-hint">
-              Interest paid on qualified student loans
+              Interest paid on qualified student loans (Form 1098-E)
               <span class="limit-badge">Max {{ formatCurrency(studentLoanLimit) }}</span>
             </p>
             <app-currency-input
@@ -105,6 +106,11 @@ type ModalTopic =
             @if (studentLoanInterest() > studentLoanLimit) {
               <p class="limit-warning">
                 Only {{ formatCurrency(studentLoanLimit) }} can be deducted
+              </p>
+            }
+            @if (studentLoanInterest() > 0 && studentLoanInterest() <= studentLoanLimit) {
+              <p class="above-line-note">
+                This reduces your AGI by {{ formatCurrency(effectiveStudentLoan()) }} regardless of itemizing
               </p>
             }
           </div>
@@ -207,6 +213,20 @@ type ModalTopic =
           </div>
         </div>
 
+        <!-- Above-the-line deduction (shown separately) -->
+        @if (studentLoanInterest() > 0) {
+          <div class="above-line-summary">
+            <h2>Above-the-Line Deduction</h2>
+            <p class="above-line-explanation">
+              This reduces your AGI before comparing standard vs. itemized deductions.
+            </p>
+            <div class="summary-row">
+              <span>Student Loan Interest</span>
+              <span>-{{ formatCurrency(effectiveStudentLoan()) }}</span>
+            </div>
+          </div>
+        }
+
         <!-- Summary Preview -->
         <div class="summary-preview">
           <h2>Your Itemized Total</h2>
@@ -215,12 +235,6 @@ type ModalTopic =
               <div class="summary-row">
                 <span>Mortgage Interest</span>
                 <span>{{ formatCurrency(mortgageInterest()) }}</span>
-              </div>
-            }
-            @if (studentLoanInterest() > 0) {
-              <div class="summary-row">
-                <span>Student Loan Interest</span>
-                <span>{{ formatCurrency(effectiveStudentLoan()) }}</span>
               </div>
             }
             @if (saltTaxes() > 0) {
@@ -243,7 +257,7 @@ type ModalTopic =
             }
             @if (totalItemized() === 0) {
               <div class="summary-row empty">
-                <span>No deductions entered yet</span>
+                <span>No itemized deductions entered yet</span>
               </div>
             }
           </div>
@@ -463,6 +477,77 @@ type ModalTopic =
       border-radius: 9999px;
     }
 
+    .above-line-badge {
+      display: inline-block;
+      background: var(--ngpf-success-light);
+      color: var(--ngpf-success);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .special-deduction {
+      background: rgba(16, 185, 129, 0.05);
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .above-line-note {
+      font-size: 0.8125rem;
+      color: var(--ngpf-success);
+      margin: 0.375rem 0 0;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+
+      &::before {
+        content: '✓';
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1rem;
+        height: 1rem;
+        background: var(--ngpf-success-light);
+        color: var(--ngpf-success);
+        border-radius: 50%;
+        font-size: 0.625rem;
+        font-weight: 700;
+      }
+    }
+
+    .above-line-summary {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+
+      h2 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--ngpf-success);
+        margin: 0 0 0.5rem;
+      }
+
+      .above-line-explanation {
+        font-size: 0.8125rem;
+        color: #047857;
+        margin: 0 0 0.75rem;
+      }
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9375rem;
+        color: #047857;
+        font-weight: 500;
+      }
+    }
+
     .info-btn {
       display: inline-flex;
       align-items: center;
@@ -609,7 +694,8 @@ export class ItemizedEntryComponent {
 
   // Form field signals initialized from session storage
   readonly mortgageInterest = signal(this.sessionStorage.taxReturn().deductions.mortgageInterest);
-  readonly studentLoanInterest = signal(this.sessionStorage.taxReturn().deductions.studentLoanInterest);
+  // Student loan interest is an adjustment (above-the-line), not itemized, but UI stays here for convenience
+  readonly studentLoanInterest = signal(this.sessionStorage.taxReturn().adjustments.studentLoanInterest);
   readonly saltTaxes = signal(this.sessionStorage.taxReturn().deductions.saltTaxes);
   readonly charitableContributions = signal(this.sessionStorage.taxReturn().deductions.charitableContributions);
   readonly medicalExpenses = signal(this.sessionStorage.taxReturn().deductions.medicalExpenses);
@@ -619,14 +705,18 @@ export class ItemizedEntryComponent {
     const income = this.sessionStorage.taxReturn().income;
     const totalW2 = income.w2s.reduce((sum, w2) => sum + (w2.wagesTips || 0), 0);
     const total1099 = income.form1099s.reduce((sum, f) => sum + (f.nonemployeeCompensation || 0), 0);
-    const grossIncome = totalW2 + total1099;
+    const totalInterest = income.form1099Ints.reduce((sum, f) => sum + (f.interestIncome || 0), 0);
+    const grossIncome = totalW2 + total1099 + totalInterest;
 
     // Deduct half of SE tax
     const netSEEarnings = total1099 * SELF_EMPLOYMENT_TAX.netEarningsMultiplier;
     const seTax = netSEEarnings * SELF_EMPLOYMENT_TAX.rate;
     const seDeduction = seTax * SELF_EMPLOYMENT_TAX.deductionRate;
 
-    return grossIncome - seDeduction;
+    // Deduct student loan interest (above-the-line)
+    const studentLoanDeduction = this.effectiveStudentLoan();
+
+    return grossIncome - seDeduction - studentLoanDeduction;
   });
 
   readonly medicalThreshold = computed(() => this.agi() * this.medicalFloor);
@@ -645,11 +735,10 @@ export class ItemizedEntryComponent {
     Math.min(this.saltTaxes(), this.saltLimit)
   );
 
-  // Total itemized deductions
+  // Total itemized deductions (excludes student loan interest which is above-the-line)
   readonly totalItemized = computed(() => {
     return (
       this.mortgageInterest() +
-      this.effectiveStudentLoan() +
       this.effectiveSalt() +
       this.charitableContributions() +
       this.deductibleMedical()
@@ -684,14 +773,19 @@ export class ItemizedEntryComponent {
   }
 
   onContinue(): void {
-    // Save deductions to session storage
+    // Save itemized deductions to session storage
     this.sessionStorage.updateDeductions((current) => ({
       ...current,
       mortgageInterest: this.mortgageInterest(),
-      studentLoanInterest: this.studentLoanInterest(),
       saltTaxes: this.saltTaxes(),
       charitableContributions: this.charitableContributions(),
       medicalExpenses: this.medicalExpenses(),
+    }));
+
+    // Save student loan interest to adjustments (above-the-line deduction)
+    this.sessionStorage.updateAdjustments((current) => ({
+      ...current,
+      studentLoanInterest: Math.min(this.studentLoanInterest(), this.studentLoanLimit),
     }));
 
     this.navigation.navigateTo('/deductions/comparison');

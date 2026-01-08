@@ -96,12 +96,6 @@ import {
                     <span>{{ formatCurrency(mortgageInterest()) }}</span>
                   </div>
                 }
-                @if (effectiveStudentLoan() > 0) {
-                  <div class="breakdown-row">
-                    <span>Student loan interest</span>
-                    <span>{{ formatCurrency(effectiveStudentLoan()) }}</span>
-                  </div>
-                }
                 @if (effectiveSalt() > 0) {
                   <div class="breakdown-row">
                     <span>State & local taxes</span>
@@ -523,10 +517,6 @@ export class DeductionComparisonComponent {
     this.sessionStorage.taxReturn().deductions.mortgageInterest
   );
 
-  readonly studentLoanInterest = computed(() =>
-    this.sessionStorage.taxReturn().deductions.studentLoanInterest
-  );
-
   readonly saltTaxes = computed(() =>
     this.sessionStorage.taxReturn().deductions.saltTaxes
   );
@@ -539,18 +529,27 @@ export class DeductionComparisonComponent {
     this.sessionStorage.taxReturn().deductions.medicalExpenses
   );
 
+  // Get student loan interest from adjustments (above-the-line)
+  readonly studentLoanInterest = computed(() =>
+    this.sessionStorage.taxReturn().adjustments.studentLoanInterest
+  );
+
   // Calculate AGI for medical expense threshold
   readonly agi = computed(() => {
     const income = this.sessionStorage.taxReturn().income;
     const totalW2 = income.w2s.reduce((sum, w2) => sum + (w2.wagesTips || 0), 0);
     const total1099 = income.form1099s.reduce((sum, f) => sum + (f.nonemployeeCompensation || 0), 0);
-    const grossIncome = totalW2 + total1099;
+    const totalInterest = income.form1099Ints.reduce((sum, f) => sum + (f.interestIncome || 0), 0);
+    const grossIncome = totalW2 + total1099 + totalInterest;
 
     const netSEEarnings = total1099 * SELF_EMPLOYMENT_TAX.netEarningsMultiplier;
     const seTax = netSEEarnings * SELF_EMPLOYMENT_TAX.rate;
     const seDeduction = seTax * SELF_EMPLOYMENT_TAX.deductionRate;
 
-    return grossIncome - seDeduction;
+    // Student loan interest is above-the-line
+    const studentLoanDeduction = this.studentLoanInterest();
+
+    return grossIncome - seDeduction - studentLoanDeduction;
   });
 
   readonly medicalThreshold = computed(() => this.agi() * DEDUCTION_LIMITS.medicalExpenseFloor);
@@ -561,19 +560,14 @@ export class DeductionComparisonComponent {
   });
 
   // Effective amounts with limits applied
-  readonly effectiveStudentLoan = computed(() =>
-    Math.min(this.studentLoanInterest(), DEDUCTION_LIMITS.studentLoanInterest)
-  );
-
   readonly effectiveSalt = computed(() =>
     Math.min(this.saltTaxes(), DEDUCTION_LIMITS.saltTaxes)
   );
 
-  // Total itemized
+  // Total itemized (student loan interest is above-the-line, not part of itemized)
   readonly totalItemized = computed(() => {
     return (
       this.mortgageInterest() +
-      this.effectiveStudentLoan() +
       this.effectiveSalt() +
       this.charitableContributions() +
       this.deductibleMedical()

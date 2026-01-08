@@ -28,12 +28,13 @@ describe('DeductionComparisonComponent', () => {
     taxReturn.income.w2s = [{ id: '1', employerName: 'Test', wagesTips: 50000, federalWithheld: 5000, socialSecurityWages: 50000, socialSecurityWithheld: 3100, medicareWages: 50000, medicareWithheld: 725 }];
     taxReturn.deductions = {
       mortgageInterest: options.mortgageInterest ?? 0,
-      studentLoanInterest: options.studentLoanInterest ?? 0,
       saltTaxes: options.saltTaxes ?? 0,
       charitableContributions: options.charitableContributions ?? 0,
       medicalExpenses: options.medicalExpenses ?? 0,
       useStandardDeduction: options.useStandardDeduction ?? true,
     };
+    // Student loan interest is now in adjustments (above-the-line)
+    taxReturn.adjustments.studentLoanInterest = options.studentLoanInterest ?? 0;
     return taxReturn;
   };
 
@@ -118,16 +119,18 @@ describe('DeductionComparisonComponent', () => {
   });
 
   it('should calculate total itemized deductions', () => {
+    // Student loan interest is above-the-line, not included in itemized
     taxReturnSignal.set(setupTaxReturn({
       mortgageInterest: 8000,
-      studentLoanInterest: 2000,
+      studentLoanInterest: 2000, // This is now in adjustments, not itemized
       saltTaxes: 5000,
       charitableContributions: 1000,
       medicalExpenses: 0,
     }));
     fixture.detectChanges();
 
-    expect(component.totalItemized()).toBe(16000);
+    // Total should be 8000 + 5000 + 1000 = 14000 (no student loan)
+    expect(component.totalItemized()).toBe(14000);
   });
 
   it('should recommend standard when itemized is less', () => {
@@ -161,14 +164,15 @@ describe('DeductionComparisonComponent', () => {
   });
 
   it('should calculate savings amount correctly', () => {
-    // Standard is 15000, itemized is 6000
+    // Standard is 15000, itemized is 5000 (student loan not included in itemized)
     taxReturnSignal.set(setupTaxReturn({
       mortgageInterest: 5000,
-      studentLoanInterest: 1000,
+      studentLoanInterest: 1000, // This is above-the-line, not itemized
     }));
     fixture.detectChanges();
 
-    expect(component.savingsAmount()).toBe(STANDARD_DEDUCTIONS.single - 6000);
+    // Savings = standard (15000) - itemized (5000) = 10000
+    expect(component.savingsAmount()).toBe(STANDARD_DEDUCTIONS.single - 5000);
   });
 
   it('should show recommendation box', () => {
@@ -241,14 +245,8 @@ describe('DeductionComparisonComponent', () => {
     expect(helpTrigger).toBeTruthy();
   });
 
-  it('should apply effective limits to student loan', () => {
-    taxReturnSignal.set(setupTaxReturn({
-      studentLoanInterest: 5000,
-    }));
-    fixture.detectChanges();
-
-    expect(component.effectiveStudentLoan()).toBe(2500);
-  });
+  // Student loan interest is now above-the-line (in adjustments), not part of itemized deductions
+  // The limit is applied in the itemized-entry component when saving to adjustments
 
   it('should apply effective limits to SALT', () => {
     taxReturnSignal.set(setupTaxReturn({

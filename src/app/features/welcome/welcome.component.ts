@@ -450,6 +450,6 @@ export class WelcomeComponent implements OnInit {
   }
 
   getStarted(): void {
-    this.navigation.goToNext();
+    this.navigation.navigateTo('/welcome/profile');
   }
 }

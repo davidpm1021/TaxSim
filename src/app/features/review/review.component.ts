@@ -497,7 +497,7 @@ export class ReviewComponent {
   );
 
   readonly studentLoanInterest = computed(() =>
-    this.sessionStorage.taxReturn().deductions.studentLoanInterest
+    this.sessionStorage.taxReturn().adjustments.studentLoanInterest
   );
 
   readonly saltTaxes = computed(() =>
@@ -516,11 +516,10 @@ export class ReviewComponent {
     if (this.useStandardDeduction()) {
       return this.taxData.getStandardDeduction(this.filingStatus());
     }
-    // Calculate itemized deductions with limits
+    // Calculate itemized deductions with limits (student loan is above-the-line, not itemized)
     return this.taxCalculation.calculateItemizedDeductions(
       {
         mortgageInterest: this.mortgageInterest(),
-        studentLoanInterest: this.studentLoanInterest(),
         saltTaxes: this.saltTaxes(),
         charitableContributions: this.charitableContributions(),
         medicalExpenses: this.medicalExpenses(),

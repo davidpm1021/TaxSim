@@ -21,6 +21,11 @@ export const SECTIONS: Section[] = [
     id: 'welcome',
     label: 'Welcome',
     path: '/welcome',
+    subsections: [
+      { id: 'landing', label: 'Welcome', path: '/welcome/landing' },
+      { id: 'profile', label: 'Your Profile', path: '/welcome/profile' },
+      { id: 'documents', label: 'Documents', path: '/welcome/documents' },
+    ],
   },
   {
     id: 'personal-info',
@@ -40,7 +45,8 @@ export const SECTIONS: Section[] = [
     subsections: [
       { id: 'income-types', label: 'Income Types', path: '/income/types' },
       { id: 'w2-entry', label: 'W-2 Entry', path: '/income/w2' },
-      { id: '1099-entry', label: '1099 Entry', path: '/income/1099' },
+      { id: '1099-entry', label: '1099-NEC Entry', path: '/income/1099' },
+      { id: '1099-int-entry', label: '1099-INT Entry', path: '/income/1099-int' },
       { id: 'income-summary', label: 'Summary', path: '/income/summary' },
     ],
   },

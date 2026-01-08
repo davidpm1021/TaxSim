@@ -409,9 +409,12 @@ export class W2EntryComponent {
       })),
     }));
 
-    // Navigate based on whether user also has 1099 income
-    if (this.sessionStorage.taxReturn().income.has1099Income) {
+    // Navigate based on what other income types user selected
+    const income = this.sessionStorage.taxReturn().income;
+    if (income.has1099Income) {
       this.navigation.navigateTo('/income/1099');
+    } else if (income.hasInterestIncome) {
+      this.navigation.navigateTo('/income/1099-int');
     } else {
       this.navigation.navigateTo('/income/summary');
     }

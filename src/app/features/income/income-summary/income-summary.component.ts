@@ -66,7 +66,7 @@ import {
                 }
               </div>
               <div class="section-subtotal">
-                <span>1099 Total</span>
+                <span>1099-NEC Total</span>
                 <span>{{ formatCurrency(total1099Income()) }}</span>
               </div>
               <div class="se-tax-note">
@@ -76,6 +76,30 @@ import {
                   <span class="note-value">{{ formatCurrency(estimatedSETax()) }}</span>
                 </div>
               </div>
+            </div>
+          }
+
+          @if (hasInterestIncome()) {
+            <div class="income-section">
+              <h2>1099-INT Interest Income</h2>
+              <div class="income-items">
+                @for (form of form1099Ints(); track form.id) {
+                  <div class="income-item">
+                    <span class="item-name">{{ form.payerName }}</span>
+                    <span class="item-amount">{{ formatCurrency(form.interestIncome) }}</span>
+                  </div>
+                }
+              </div>
+              <div class="section-subtotal">
+                <span>Interest Total</span>
+                <span>{{ formatCurrency(totalInterestIncome()) }}</span>
+              </div>
+              @if (totalInterestWithheld() > 0) {
+                <div class="withheld-note">
+                  <span class="note-label">Federal tax already withheld:</span>
+                  <span class="note-value">{{ formatCurrency(totalInterestWithheld()) }}</span>
+                </div>
+              }
             </div>
           }
         </div>
@@ -379,9 +403,11 @@ export class IncomeSummaryComponent {
 
   readonly hasW2Income = computed(() => this.sessionStorage.taxReturn().income.hasW2Income);
   readonly has1099Income = computed(() => this.sessionStorage.taxReturn().income.has1099Income);
+  readonly hasInterestIncome = computed(() => this.sessionStorage.taxReturn().income.hasInterestIncome);
 
   readonly w2s = computed(() => this.sessionStorage.taxReturn().income.w2s);
   readonly form1099s = computed(() => this.sessionStorage.taxReturn().income.form1099s);
+  readonly form1099Ints = computed(() => this.sessionStorage.taxReturn().income.form1099Ints);
 
   readonly totalW2Wages = computed(() => {
     return this.w2s().reduce((sum, w2) => sum + (w2.wagesTips || 0), 0);
@@ -395,6 +421,14 @@ export class IncomeSummaryComponent {
     return this.form1099s().reduce((sum, form) => sum + (form.nonemployeeCompensation || 0), 0);
   });
 
+  readonly totalInterestIncome = computed(() => {
+    return this.form1099Ints().reduce((sum, form) => sum + (form.interestIncome || 0), 0);
+  });
+
+  readonly totalInterestWithheld = computed(() => {
+    return this.form1099Ints().reduce((sum, form) => sum + (form.federalWithheld || 0), 0);
+  });
+
   readonly estimatedSETax = computed(() => {
     const netEarnings = this.total1099Income() * SELF_EMPLOYMENT_TAX.netEarningsMultiplier;
     return netEarnings * SELF_EMPLOYMENT_TAX.rate;
@@ -405,7 +439,7 @@ export class IncomeSummaryComponent {
   });
 
   readonly totalGrossIncome = computed(() => {
-    return this.totalW2Wages() + this.total1099Income();
+    return this.totalW2Wages() + this.total1099Income() + this.totalInterestIncome();
   });
 
   readonly adjustedGrossIncome = computed(() => {
@@ -427,7 +461,9 @@ export class IncomeSummaryComponent {
 
   onBack(): void {
     // Go back to the last income entry form the user used
-    if (this.has1099Income()) {
+    if (this.hasInterestIncome()) {
+      this.navigation.navigateTo('/income/1099-int');
+    } else if (this.has1099Income()) {
       this.navigation.navigateTo('/income/1099');
     } else if (this.hasW2Income()) {
       this.navigation.navigateTo('/income/w2');

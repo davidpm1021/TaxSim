@@ -1,5 +1,6 @@
 import { Dependent } from './dependent.model';
 import { FilingStatus } from './filing-status.model';
+import { StudentProfile, createEmptyStudentProfile } from './student-profile.model';
 
 export interface PersonalInfo {
   firstName: string;
@@ -9,6 +10,7 @@ export interface PersonalInfo {
   claimedAsDependent: boolean;
   hasDependents: boolean;
   dependents: Dependent[];
+  studentProfile: StudentProfile;
 }
 
 export function createEmptyPersonalInfo(): PersonalInfo {
@@ -20,5 +22,6 @@ export function createEmptyPersonalInfo(): PersonalInfo {
     claimedAsDependent: false,
     hasDependents: false,
     dependents: [],
+    studentProfile: createEmptyStudentProfile(),
   };
 }
