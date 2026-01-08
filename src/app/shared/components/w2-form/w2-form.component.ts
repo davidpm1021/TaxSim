@@ -68,20 +68,26 @@ import { W2, Box12Entry } from '@core/models';
             <div class="box-label">1 Wages, tips, other compensation</div>
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().wagesTips)"
-              (ngModelChange)="onCurrencyChange('wagesTips', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().wagesTips, 'wagesTips')"
+              (input)="onCurrencyInput($event, 'wagesTips')"
+              (focus)="onCurrencyFocus($event, 'wagesTips')"
+              (blur)="onCurrencyBlur($event, 'wagesTips')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
           <div class="box box-2">
             <div class="box-label">2 Federal income tax withheld</div>
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().federalWithheld)"
-              (ngModelChange)="onCurrencyChange('federalWithheld', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().federalWithheld, 'federalWithheld')"
+              (input)="onCurrencyInput($event, 'federalWithheld')"
+              (focus)="onCurrencyFocus($event, 'federalWithheld')"
+              (blur)="onCurrencyBlur($event, 'federalWithheld')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
         </div>
@@ -103,20 +109,26 @@ import { W2, Box12Entry } from '@core/models';
             <div class="box-label">3 Social security wages</div>
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().socialSecurityWages)"
-              (ngModelChange)="onCurrencyChange('socialSecurityWages', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().socialSecurityWages, 'socialSecurityWages')"
+              (input)="onCurrencyInput($event, 'socialSecurityWages')"
+              (focus)="onCurrencyFocus($event, 'socialSecurityWages')"
+              (blur)="onCurrencyBlur($event, 'socialSecurityWages')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
           <div class="box box-4">
             <div class="box-label">4 Social security tax withheld</div>
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().socialSecurityWithheld)"
-              (ngModelChange)="onCurrencyChange('socialSecurityWithheld', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().socialSecurityWithheld, 'socialSecurityWithheld')"
+              (input)="onCurrencyInput($event, 'socialSecurityWithheld')"
+              (focus)="onCurrencyFocus($event, 'socialSecurityWithheld')"
+              (blur)="onCurrencyBlur($event, 'socialSecurityWithheld')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
         </div>
@@ -152,40 +164,52 @@ import { W2, Box12Entry } from '@core/models';
               <div class="box-label">5 Medicare wages and tips</div>
               <input
                 type="text"
+                inputmode="numeric"
                 class="box-value currency"
-                [ngModel]="formatCurrency(w2().medicareWages)"
-                (ngModelChange)="onCurrencyChange('medicareWages', $event)"
-                (focus)="onCurrencyFocus($event)"
+                [value]="formatCurrency(w2().medicareWages, 'medicareWages')"
+                (input)="onCurrencyInput($event, 'medicareWages')"
+                (focus)="onCurrencyFocus($event, 'medicareWages')"
+                (blur)="onCurrencyBlur($event, 'medicareWages')"
+                (keydown)="onCurrencyKeyDown($event)"
               />
             </div>
             <div class="box box-6">
               <div class="box-label">6 Medicare tax withheld</div>
               <input
                 type="text"
+                inputmode="numeric"
                 class="box-value currency"
-                [ngModel]="formatCurrency(w2().medicareWithheld)"
-                (ngModelChange)="onCurrencyChange('medicareWithheld', $event)"
-                (focus)="onCurrencyFocus($event)"
+                [value]="formatCurrency(w2().medicareWithheld, 'medicareWithheld')"
+                (input)="onCurrencyInput($event, 'medicareWithheld')"
+                (focus)="onCurrencyFocus($event, 'medicareWithheld')"
+                (blur)="onCurrencyBlur($event, 'medicareWithheld')"
+                (keydown)="onCurrencyKeyDown($event)"
               />
             </div>
             <div class="box box-7">
               <div class="box-label">7 Social security tips</div>
               <input
                 type="text"
+                inputmode="numeric"
                 class="box-value currency"
-                [ngModel]="formatCurrency(w2().socialSecurityTips)"
-                (ngModelChange)="onCurrencyChange('socialSecurityTips', $event)"
-                (focus)="onCurrencyFocus($event)"
+                [value]="formatCurrency(w2().socialSecurityTips, 'socialSecurityTips')"
+                (input)="onCurrencyInput($event, 'socialSecurityTips')"
+                (focus)="onCurrencyFocus($event, 'socialSecurityTips')"
+                (blur)="onCurrencyBlur($event, 'socialSecurityTips')"
+                (keydown)="onCurrencyKeyDown($event)"
               />
             </div>
             <div class="box box-8">
               <div class="box-label">8 Allocated tips</div>
               <input
                 type="text"
+                inputmode="numeric"
                 class="box-value currency"
-                [ngModel]="formatCurrency(w2().allocatedTips)"
-                (ngModelChange)="onCurrencyChange('allocatedTips', $event)"
-                (focus)="onCurrencyFocus($event)"
+                [value]="formatCurrency(w2().allocatedTips, 'allocatedTips')"
+                (input)="onCurrencyInput($event, 'allocatedTips')"
+                (focus)="onCurrencyFocus($event, 'allocatedTips')"
+                (blur)="onCurrencyBlur($event, 'allocatedTips')"
+                (keydown)="onCurrencyKeyDown($event)"
               />
             </div>
           </div>
@@ -210,10 +234,13 @@ import { W2, Box12Entry } from '@core/models';
             <div class="box-label">10 Dependent care benefits</div>
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().dependentCareBenefits)"
-              (ngModelChange)="onCurrencyChange('dependentCareBenefits', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().dependentCareBenefits, 'dependentCareBenefits')"
+              (input)="onCurrencyInput($event, 'dependentCareBenefits')"
+              (focus)="onCurrencyFocus($event, 'dependentCareBenefits')"
+              (blur)="onCurrencyBlur($event, 'dependentCareBenefits')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
         </div>
@@ -250,10 +277,13 @@ import { W2, Box12Entry } from '@core/models';
             <div class="box-label">11 Nonqualified plans</div>
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().nonqualifiedPlans)"
-              (ngModelChange)="onCurrencyChange('nonqualifiedPlans', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().nonqualifiedPlans, 'nonqualifiedPlans')"
+              (input)="onCurrencyInput($event, 'nonqualifiedPlans')"
+              (focus)="onCurrencyFocus($event, 'nonqualifiedPlans')"
+              (blur)="onCurrencyBlur($event, 'nonqualifiedPlans')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
         </div>
@@ -278,27 +308,27 @@ import { W2, Box12Entry } from '@core/models';
             />
           </div>
           <div class="box box-12">
-            <div class="box-label">12a See instructions for box 12</div>
+            <div class="box-label">12 See instructions for box 12</div>
             <div class="box12-grid">
               @for (entry of getBox12Entries(); track $index; let i = $index) {
                 <div class="box12-row">
-                  <span class="box12-letter">{{ i === 0 ? '' : '12' + getBox12Letter(i) }}</span>
-                  <div class="box12-code-section">
-                    <span class="code-label">C<br/>o<br/>d<br/>e</span>
-                    <input
-                      type="text"
-                      class="box12-code"
-                      [ngModel]="entry.code"
-                      (ngModelChange)="onBox12CodeChange(i, $event)"
-                      maxlength="2"
-                    />
-                  </div>
+                  <span class="box12-letter">{{ getBox12Letter(i) }}</span>
                   <input
                     type="text"
-                    class="box12-amount currency"
-                    [ngModel]="formatCurrency(entry.amount)"
-                    (ngModelChange)="onBox12AmountChange(i, $event)"
-                    (focus)="onCurrencyFocus($event)"
+                    class="box12-code"
+                    [value]="entry.code"
+                    (input)="onBox12CodeChange(i, $any($event.target).value)"
+                    maxlength="2"
+                    placeholder="Code"
+                  />
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    class="box12-amount"
+                    [value]="formatBox12Amount(entry.amount, i)"
+                    (input)="onBox12AmountInput($event, i)"
+                    (keydown)="onCurrencyKeyDown($event)"
+                    placeholder="Amount"
                   />
                 </div>
               }
@@ -374,20 +404,26 @@ import { W2, Box12Entry } from '@core/models';
             <div class="box-label">16 State wages, tips, etc.</div>
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().stateWages)"
-              (ngModelChange)="onCurrencyChange('stateWages', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().stateWages, 'stateWages')"
+              (input)="onCurrencyInput($event, 'stateWages')"
+              (focus)="onCurrencyFocus($event, 'stateWages')"
+              (blur)="onCurrencyBlur($event, 'stateWages')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
           <div class="box box-17">
             <div class="box-label">17 State income tax</div>
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().stateWithheld)"
-              (ngModelChange)="onCurrencyChange('stateWithheld', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().stateWithheld, 'stateWithheld')"
+              (input)="onCurrencyInput($event, 'stateWithheld')"
+              (focus)="onCurrencyFocus($event, 'stateWithheld')"
+              (blur)="onCurrencyBlur($event, 'stateWithheld')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
         </div>
@@ -415,19 +451,25 @@ import { W2, Box12Entry } from '@core/models';
           <div class="box box-16">
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().stateWages2 || 0)"
-              (ngModelChange)="onCurrencyChange('stateWages2', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().stateWages2 || 0, 'stateWages2')"
+              (input)="onCurrencyInput($event, 'stateWages2')"
+              (focus)="onCurrencyFocus($event, 'stateWages2')"
+              (blur)="onCurrencyBlur($event, 'stateWages2')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
           <div class="box box-17">
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().stateWithheld2 || 0)"
-              (ngModelChange)="onCurrencyChange('stateWithheld2', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().stateWithheld2 || 0, 'stateWithheld2')"
+              (input)="onCurrencyInput($event, 'stateWithheld2')"
+              (focus)="onCurrencyFocus($event, 'stateWithheld2')"
+              (blur)="onCurrencyBlur($event, 'stateWithheld2')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
         </div>
@@ -438,20 +480,26 @@ import { W2, Box12Entry } from '@core/models';
             <div class="box-label">18 Local wages, tips, etc.</div>
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().localWages)"
-              (ngModelChange)="onCurrencyChange('localWages', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().localWages, 'localWages')"
+              (input)="onCurrencyInput($event, 'localWages')"
+              (focus)="onCurrencyFocus($event, 'localWages')"
+              (blur)="onCurrencyBlur($event, 'localWages')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
           <div class="box box-19">
             <div class="box-label">19 Local income tax</div>
             <input
               type="text"
+              inputmode="numeric"
               class="box-value currency"
-              [ngModel]="formatCurrency(w2().localWithheld)"
-              (ngModelChange)="onCurrencyChange('localWithheld', $event)"
-              (focus)="onCurrencyFocus($event)"
+              [value]="formatCurrency(w2().localWithheld, 'localWithheld')"
+              (input)="onCurrencyInput($event, 'localWithheld')"
+              (focus)="onCurrencyFocus($event, 'localWithheld')"
+              (blur)="onCurrencyBlur($event, 'localWithheld')"
+              (keydown)="onCurrencyKeyDown($event)"
             />
           </div>
           <div class="box box-20">
@@ -742,60 +790,70 @@ import { W2, Box12Entry } from '@core/models';
     .box12-grid {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
+      margin-top: 4px;
     }
 
     .box12-row {
       display: flex;
       align-items: center;
-      gap: 4px;
-      height: 26px;
+      gap: 8px;
+      height: 28px;
     }
 
     .box12-letter {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: bold;
-      width: 24px;
-      text-align: right;
-    }
-
-    .box12-code-section {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .code-label {
-      font-size: 7px;
-      line-height: 1;
-      text-align: center;
+      width: 16px;
+      text-transform: lowercase;
     }
 
     .box12-code {
-      width: 30px;
-      height: 22px;
-      border: 1px solid #666;
+      width: 40px;
+      height: 24px;
+      border: 1px solid #999;
+      border-radius: 3px;
       text-align: center;
       font-family: 'Courier New', Courier, monospace;
       font-size: 12px;
       text-transform: uppercase;
       background: #fff;
+      padding: 0;
+    }
+
+    .box12-code:focus {
+      background: #fffde7;
+      border-color: #666;
+      outline: none;
+    }
+
+    .box12-code::placeholder {
+      color: #bbb;
+      font-size: 9px;
+      text-transform: none;
     }
 
     .box12-amount {
       flex: 1;
-      height: 22px;
-      border: none;
-      border-bottom: 1px solid #666;
+      height: 24px;
+      border: 1px solid #999;
+      border-radius: 3px;
       font-family: 'Courier New', Courier, monospace;
       font-size: 12px;
       text-align: right;
-      background: transparent;
-      padding: 0 4px;
+      background: #fff;
+      padding: 0 6px;
     }
 
     .box12-amount:focus {
       background: #fffde7;
+      border-color: #666;
+      outline: none;
+    }
+
+    .box12-amount::placeholder {
+      color: #bbb;
+      font-size: 10px;
     }
 
     /* Box 13 checkboxes */
@@ -956,18 +1014,51 @@ export class W2FormComponent {
   w2 = input.required<W2>();
   w2Change = output<Partial<W2>>();
 
-  formatCurrency(value: number | undefined): string {
+  // Track which field is being edited to show raw value
+  private editingField: string | null = null;
+  private editingValue: string = '';
+
+  formatCurrency(value: number | undefined, field?: string): string {
+    // If this field is being edited, show the raw input value
+    if (field && this.editingField === field) {
+      return this.editingValue;
+    }
     if (value === undefined || value === 0) return '';
     return value.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     });
   }
 
-  onCurrencyFocus(event: FocusEvent): void {
+  onCurrencyFocus(event: FocusEvent, field: string): void {
     const input = event.target as HTMLInputElement;
-    if (input.value === '0.00' || input.value === '') {
-      input.value = '';
+    this.editingField = field;
+    // Convert formatted value to raw number for editing
+    const rawValue = input.value.replace(/,/g, '');
+    this.editingValue = rawValue === '0' ? '' : rawValue;
+    input.value = this.editingValue;
+    // Select all for easy replacement
+    setTimeout(() => input.select(), 0);
+  }
+
+  onCurrencyBlur(event: FocusEvent, field: string): void {
+    this.editingField = null;
+    this.editingValue = '';
+  }
+
+  onCurrencyKeyDown(event: KeyboardEvent): void {
+    // Allow: backspace, delete, tab, escape, enter, arrows
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+    if (allowedKeys.includes(event.key)) {
+      return;
+    }
+    // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+    if (event.ctrlKey || event.metaKey) {
+      return;
+    }
+    // Block non-numeric keys (only digits allowed)
+    if (!/^\d$/.test(event.key)) {
+      event.preventDefault();
     }
   }
 
@@ -975,8 +1066,15 @@ export class W2FormComponent {
     this.w2Change.emit({ [field]: value });
   }
 
-  onCurrencyChange(field: keyof W2, value: string): void {
-    const numericValue = parseFloat(value.replace(/,/g, '')) || 0;
+  onCurrencyInput(event: Event, field: keyof W2): void {
+    const input = event.target as HTMLInputElement;
+    // Remove any non-numeric characters
+    const sanitized = input.value.replace(/[^0-9]/g, '');
+    if (sanitized !== input.value) {
+      input.value = sanitized;
+    }
+    this.editingValue = sanitized;
+    const numericValue = parseInt(sanitized, 10) || 0;
     this.w2Change.emit({ [field]: numericValue });
   }
 
@@ -999,10 +1097,24 @@ export class W2FormComponent {
     this.w2Change.emit({ box12: entries });
   }
 
-  onBox12AmountChange(index: number, value: string): void {
-    const numericValue = parseFloat(value.replace(/,/g, '')) || 0;
+  onBox12AmountInput(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    // Remove any non-numeric characters
+    const sanitized = input.value.replace(/[^0-9]/g, '');
+    if (sanitized !== input.value) {
+      input.value = sanitized;
+    }
+    const numericValue = parseInt(sanitized, 10) || 0;
     const entries = [...this.getBox12Entries()];
     entries[index] = { ...entries[index], amount: numericValue };
     this.w2Change.emit({ box12: entries });
+  }
+
+  formatBox12Amount(amount: number, index: number): string {
+    if (amount === 0) return '';
+    return amount.toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
   }
 }

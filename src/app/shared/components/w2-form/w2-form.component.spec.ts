@@ -111,53 +111,62 @@ describe('W2FormComponent', () => {
   });
 
   describe('Currency Field Inputs', () => {
+    function createInputEvent(value: string): Event {
+      const input = document.createElement('input');
+      input.value = value;
+      return { target: input } as unknown as Event;
+    }
+
     it('should emit numeric value for wages (Box 1)', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyChange('wagesTips', '50,000.00');
+      component.onCurrencyInput(createInputEvent('50000'), 'wagesTips');
 
       expect(hostComponent.changes).toContainEqual({ wagesTips: 50000 });
     });
 
     it('should emit numeric value for federal withheld (Box 2)', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyChange('federalWithheld', '5,000.00');
+      component.onCurrencyInput(createInputEvent('5000'), 'federalWithheld');
 
       expect(hostComponent.changes).toContainEqual({ federalWithheld: 5000 });
     });
 
     it('should emit numeric value for social security wages (Box 3)', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyChange('socialSecurityWages', '45,000');
+      component.onCurrencyInput(createInputEvent('45000'), 'socialSecurityWages');
 
       expect(hostComponent.changes).toContainEqual({ socialSecurityWages: 45000 });
     });
 
     it('should emit numeric value for medicare wages (Box 5)', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyChange('medicareWages', '45,000');
+      component.onCurrencyInput(createInputEvent('45000'), 'medicareWages');
 
       expect(hostComponent.changes).toContainEqual({ medicareWages: 45000 });
     });
 
     it('should handle empty currency value as 0', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyChange('wagesTips', '');
+      component.onCurrencyInput(createInputEvent(''), 'wagesTips');
 
       expect(hostComponent.changes).toContainEqual({ wagesTips: 0 });
     });
 
-    it('should strip commas from currency values', () => {
+    it('should strip non-numeric characters from currency values', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyChange('wagesTips', '1,234.56');
+      const event = createInputEvent('1234abc');
+      component.onCurrencyInput(event, 'wagesTips');
 
-      expect(hostComponent.changes).toContainEqual({ wagesTips: 1234.56 });
+      // Non-numeric chars should be stripped
+      expect((event.target as HTMLInputElement).value).toBe('1234');
+      expect(hostComponent.changes).toContainEqual({ wagesTips: 1234 });
     });
   });
 
   describe('Currency Formatting', () => {
-    it('should format non-zero currency values with commas and decimals', () => {
+    it('should format non-zero currency values with commas (no decimals)', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      expect(component.formatCurrency(1234.56)).toBe('1,234.56');
+      expect(component.formatCurrency(1234)).toBe('1,234');
     });
 
     it('should return empty string for zero value', () => {
@@ -172,7 +181,7 @@ describe('W2FormComponent', () => {
 
     it('should format large values correctly', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      expect(component.formatCurrency(1234567.89)).toBe('1,234,567.89');
+      expect(component.formatCurrency(1234567)).toBe('1,234,567');
     });
   });
 
@@ -208,7 +217,10 @@ describe('W2FormComponent', () => {
 
     it('should emit change when box 12 amount is entered', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onBox12AmountChange(0, '5,000');
+      const input = document.createElement('input');
+      input.value = '5000';
+      const event = { target: input } as unknown as Event;
+      component.onBox12AmountInput(event, 0);
 
       const lastChange = hostComponent.changes[hostComponent.changes.length - 1];
       expect(lastChange.box12?.[0].amount).toBe(5000);
@@ -254,6 +266,12 @@ describe('W2FormComponent', () => {
   });
 
   describe('State Tax Section', () => {
+    function createInputEvent(value: string): Event {
+      const input = document.createElement('input');
+      input.value = value;
+      return { target: input } as unknown as Event;
+    }
+
     it('should emit change for state code', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
       component.onFieldChange('state', 'CA');
@@ -263,14 +281,14 @@ describe('W2FormComponent', () => {
 
     it('should emit change for state wages', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyChange('stateWages', '45,000');
+      component.onCurrencyInput(createInputEvent('45000'), 'stateWages');
 
       expect(hostComponent.changes).toContainEqual({ stateWages: 45000 });
     });
 
     it('should emit change for state withheld', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyChange('stateWithheld', '2,000');
+      component.onCurrencyInput(createInputEvent('2000'), 'stateWithheld');
 
       expect(hostComponent.changes).toContainEqual({ stateWithheld: 2000 });
     });
@@ -278,7 +296,7 @@ describe('W2FormComponent', () => {
     it('should support second state entry', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
       component.onFieldChange('state2', 'NY');
-      component.onCurrencyChange('stateWages2', '10,000');
+      component.onCurrencyInput(createInputEvent('10000'), 'stateWages2');
 
       expect(hostComponent.changes).toContainEqual({ state2: 'NY' });
       expect(hostComponent.changes).toContainEqual({ stateWages2: 10000 });
@@ -286,16 +304,22 @@ describe('W2FormComponent', () => {
   });
 
   describe('Local Tax Section', () => {
+    function createInputEvent(value: string): Event {
+      const input = document.createElement('input');
+      input.value = value;
+      return { target: input } as unknown as Event;
+    }
+
     it('should emit change for local wages', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyChange('localWages', '45,000');
+      component.onCurrencyInput(createInputEvent('45000'), 'localWages');
 
       expect(hostComponent.changes).toContainEqual({ localWages: 45000 });
     });
 
     it('should emit change for local withheld', () => {
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyChange('localWithheld', '1,000');
+      component.onCurrencyInput(createInputEvent('1000'), 'localWithheld');
 
       expect(hostComponent.changes).toContainEqual({ localWithheld: 1000 });
     });
@@ -325,26 +349,69 @@ describe('W2FormComponent', () => {
   });
 
   describe('Focus Handling', () => {
-    it('should clear zero value on currency focus', () => {
-      const mockEvent = {
-        target: { value: '0.00' },
-      } as unknown as FocusEvent;
+    it('should set raw value on currency focus', () => {
+      const input = document.createElement('input');
+      input.value = '1,234';
+      const mockEvent = { target: input } as unknown as FocusEvent;
 
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyFocus(mockEvent);
+      component.onCurrencyFocus(mockEvent, 'wagesTips');
 
-      expect((mockEvent.target as HTMLInputElement).value).toBe('');
+      // Value should have commas stripped for editing
+      expect(input.value).toBe('1234');
     });
 
-    it('should not change non-zero value on currency focus', () => {
-      const mockEvent = {
-        target: { value: '1,234.56' },
-      } as unknown as FocusEvent;
+    it('should clear zero value on currency focus', () => {
+      const input = document.createElement('input');
+      input.value = '0';
+      const mockEvent = { target: input } as unknown as FocusEvent;
 
       const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
-      component.onCurrencyFocus(mockEvent);
+      component.onCurrencyFocus(mockEvent, 'wagesTips');
 
-      expect((mockEvent.target as HTMLInputElement).value).toBe('1,234.56');
+      expect(input.value).toBe('');
+    });
+  });
+
+  describe('Keyboard Input Validation', () => {
+    it('should allow numeric keys', () => {
+      const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
+      const event = new KeyboardEvent('keydown', { key: '5' });
+      const preventDefaultSpy = jest.spyOn(event, 'preventDefault');
+
+      component.onCurrencyKeyDown(event);
+
+      expect(preventDefaultSpy).not.toHaveBeenCalled();
+    });
+
+    it('should block letter keys', () => {
+      const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
+      const event = new KeyboardEvent('keydown', { key: 'a' });
+      const preventDefaultSpy = jest.spyOn(event, 'preventDefault');
+
+      component.onCurrencyKeyDown(event);
+
+      expect(preventDefaultSpy).toHaveBeenCalled();
+    });
+
+    it('should allow backspace', () => {
+      const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
+      const event = new KeyboardEvent('keydown', { key: 'Backspace' });
+      const preventDefaultSpy = jest.spyOn(event, 'preventDefault');
+
+      component.onCurrencyKeyDown(event);
+
+      expect(preventDefaultSpy).not.toHaveBeenCalled();
+    });
+
+    it('should allow tab for navigation', () => {
+      const component = fixture.debugElement.children[0].componentInstance as W2FormComponent;
+      const event = new KeyboardEvent('keydown', { key: 'Tab' });
+      const preventDefaultSpy = jest.spyOn(event, 'preventDefault');
+
+      component.onCurrencyKeyDown(event);
+
+      expect(preventDefaultSpy).not.toHaveBeenCalled();
     });
   });
 });

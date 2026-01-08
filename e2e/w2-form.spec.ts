@@ -5,11 +5,11 @@ test.describe('W-2 Form Entry', () => {
     // Navigate through the flow to get to W2 entry
     await page.goto('/');
 
-    // Welcome
+    // Welcome - click the CTA button
     await page.getByRole('button', { name: /start|begin|get started/i }).click();
 
-    // Filing Status - Single
-    await page.locator('label.filing-option').filter({ hasText: /single/i }).click();
+    // Filing Status - Single (use text-based selection for resilience)
+    await page.getByText('Single').click();
     await page.getByRole('button', { name: /continue/i }).click();
 
     // Basic Info
@@ -18,12 +18,12 @@ test.describe('W-2 Form Entry', () => {
     await page.locator('input[type="date"]').fill('1990-05-15');
     await page.getByRole('button', { name: /continue/i }).click();
 
-    // Dependent Status - Yes (can be claimed as dependent - single filers skip to income)
-    await page.getByText(/yes/i).first().click();
+    // Dependent Status - select "Yes"
+    await page.locator('.option').filter({ hasText: /yes/i }).click();
     await page.getByRole('button', { name: /continue/i }).click();
 
-    // Income Types - W2
-    await page.locator('label.income-option').filter({ hasText: /w-?2.*wages/i }).click();
+    // Income Types - W2 (use text-based selection)
+    await page.locator('.income-option').filter({ hasText: /w-?2/i }).click();
     await page.getByRole('button', { name: /continue/i }).click();
 
     // Now on W2 entry page
@@ -75,9 +75,15 @@ test.describe('W-2 Form Entry', () => {
   });
 
   test('should navigate to income summary on continue', async ({ page }) => {
-    // Fill minimum required data (employer name)
-    const employerInput = page.locator('input[placeholder="Employer name"]');
-    await employerInput.fill('Test Company');
+    // Fill required W2 data
+    await page.locator('input[placeholder="Employer name"]').fill('Test Company');
+    await page.locator('input[placeholder="Street address"]').first().fill('123 Main St');
+    await page.locator('input[placeholder="City, State ZIP"]').first().fill('New York, NY 10001');
+
+    // Fill Box 1 (wages) - type in the currency field
+    const wagesInput = page.locator('.box-1 input.currency');
+    await wagesInput.click();
+    await wagesInput.fill('50000');
 
     // Click continue
     await page.getByRole('button', { name: /continue/i }).click();

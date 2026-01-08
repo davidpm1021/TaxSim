@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { NavigationService, SessionStorageService, ValidationService } from '@core/services';
 import { Form1099NEC, createEmptyForm1099NEC } from '@core/models';
 import { SELF_EMPLOYMENT_TAX } from '@core/constants/tax-year-2025';
@@ -8,7 +7,7 @@ import {
   NavigationHeaderComponent,
   EducationalModalComponent,
   ContinueButtonComponent,
-  CurrencyInputComponent,
+  Form1099NECFormComponent,
   ValidationMessageComponent,
 } from '@shared/components';
 
@@ -17,11 +16,10 @@ import {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     NavigationHeaderComponent,
     EducationalModalComponent,
     ContinueButtonComponent,
-    CurrencyInputComponent,
+    Form1099NECFormComponent,
     ValidationMessageComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,15 +38,15 @@ import {
 
         <p class="instruction">
           Enter income from each 1099-NEC form you received for freelance work, gig jobs, or other
-          self-employment.
+          self-employment. Fill in the form below just like your actual 1099-NEC.
         </p>
 
         <div class="form-list">
           @for (form of form1099s(); track form.id; let i = $index) {
-            <div class="form-card">
-              <div class="form-header">
-                <span class="form-number">1099-NEC #{{ i + 1 }}</span>
-                @if (form1099s().length > 1) {
+            <div class="form-wrapper">
+              @if (form1099s().length > 1) {
+                <div class="form-actions">
+                  <span class="form-label">1099-NEC #{{ i + 1 }}</span>
                   <button
                     type="button"
                     class="remove-btn"
@@ -57,39 +55,12 @@ import {
                   >
                     Remove
                   </button>
-                }
-              </div>
-
-              <div class="form-fields">
-                <div class="form-group">
-                  <label [for]="'payer-' + i">Payer Name</label>
-                  <input
-                    type="text"
-                    [id]="'payer-' + i"
-                    [ngModel]="form.payerName"
-                    (ngModelChange)="updateField(form.id, 'payerName', $event)"
-                    (blur)="touchField(form.id, 'payerName')"
-                    [class.invalid]="getFieldError(form.id, 'payerName')"
-                    [name]="'payer-' + i"
-                    placeholder="e.g., DoorDash, Client Name"
-                  />
-                  <app-validation-message [error]="getFieldError(form.id, 'payerName')" />
                 </div>
-
-                <div class="form-group">
-                  <label [for]="'income-' + i">
-                    Box 1: Nonemployee Compensation
-                    <span class="box-hint">Amount you earned</span>
-                  </label>
-                  <app-currency-input
-                    [inputId]="'income-' + i"
-                    [ngModel]="form.nonemployeeCompensation"
-                    (ngModelChange)="updateField(form.id, 'nonemployeeCompensation', $event)"
-                    [name]="'income-' + i"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
+              }
+              <app-form-1099-nec-form
+                [form1099]="form"
+                (form1099Change)="updateForm(form.id, $event)"
+              />
             </div>
           }
 
@@ -106,17 +77,25 @@ import {
             </div>
           </div>
 
-          <div class="se-tax-notice">
-            <div class="notice-icon">!</div>
-            <div class="notice-content">
-              <strong>Self-Employment Tax Applies</strong>
-              <p>
-                You'll owe an estimated <strong>{{ formatCurrency(estimatedSETax()) }}</strong> in
-                self-employment tax ({{ seRate }}% for Social Security and Medicare).
-              </p>
+          @if (totalIncome() > 0) {
+            <div class="se-tax-notice">
+              <div class="notice-icon">!</div>
+              <div class="notice-content">
+                <strong>Self-Employment Tax Applies</strong>
+                <p>
+                  You'll owe an estimated <strong>{{ formatCurrency(estimatedSETax()) }}</strong> in
+                  self-employment tax ({{ seRate }}% for Social Security and Medicare).
+                </p>
+              </div>
             </div>
-          </div>
+          }
         </div>
+
+        @if (validationWarning()) {
+          <div class="validation-warning">
+            <app-validation-message [error]="validationWarning()" />
+          </div>
+        }
 
         <app-continue-button
           [disabled]="!canContinue()"
@@ -161,7 +140,7 @@ import {
     }
 
     .content-card {
-      max-width: 700px;
+      max-width: 850px;
       margin: 0 auto;
       background: var(--ngpf-white);
       border-radius: var(--radius-lg);
@@ -218,24 +197,22 @@ import {
     .form-list {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 1.5rem;
     }
 
-    .form-card {
-      border: 1px solid var(--ngpf-gray-light);
-      border-radius: var(--radius-md);
-      padding: 1.25rem;
-      background: var(--ngpf-gray-pale);
+    .form-wrapper {
+      position: relative;
     }
 
-    .form-header {
+    .form-actions {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
+      padding: 0 0.25rem;
     }
 
-    .form-number {
+    .form-label {
       font-weight: 600;
       color: var(--ngpf-navy-light);
       font-size: 1rem;
@@ -250,56 +227,6 @@ import {
 
       &:hover {
         text-decoration: underline;
-      }
-    }
-
-    .form-fields {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.375rem;
-
-      label {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--ngpf-gray-dark);
-        display: flex;
-        flex-direction: column;
-        gap: 0.125rem;
-      }
-
-      .box-hint {
-        font-size: 0.75rem;
-        font-weight: 400;
-        color: var(--ngpf-gray);
-      }
-
-      input {
-        padding: 0.625rem 0.75rem;
-        font-size: 1rem;
-        border: 2px solid var(--ngpf-gray-light);
-        border-radius: var(--radius-sm);
-        font-family: inherit;
-        background: var(--ngpf-white);
-
-        &:focus {
-          outline: none;
-          border-color: var(--ngpf-navy-light);
-          box-shadow: 0 0 0 3px rgba(39, 92, 228, 0.15);
-        }
-
-        &.invalid {
-          border-color: var(--ngpf-error);
-
-          &:focus {
-            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
-          }
-        }
       }
     }
 
@@ -387,6 +314,14 @@ import {
         color: #856404;
       }
     }
+
+    .validation-warning {
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      background: var(--ngpf-error-light);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--ngpf-error);
+    }
   `,
 })
 export class Form1099EntryComponent {
@@ -395,9 +330,6 @@ export class Form1099EntryComponent {
   private readonly validation = inject(ValidationService);
 
   readonly helpModal = viewChild.required<EducationalModalComponent>('helpModal');
-
-  // Track touched fields per form: Map<formId, Set<fieldName>>
-  private readonly touchedFields = signal<Map<string, Set<string>>>(new Map());
 
   readonly seRate = Math.round(SELF_EMPLOYMENT_TAX.rate * 100 * 10) / 10;
 
@@ -426,31 +358,30 @@ export class Form1099EntryComponent {
   readonly canContinue = computed(() => {
     const formList = this.form1099s();
     return formList.length > 0 && formList.every((form) =>
-      this.validation.validateRequired(form.payerName, 'Payer name').isValid
+      this.validation.validateRequired(form.payerName, 'Payer name').isValid &&
+      form.nonemployeeCompensation > 0
     );
   });
 
-  touchField(formId: string, field: string): void {
-    this.touchedFields.update((map) => {
-      const newMap = new Map(map);
-      const fields = newMap.get(formId) || new Set<string>();
-      newMap.set(formId, new Set([...fields, field]));
-      return newMap;
-    });
-  }
+  readonly validationWarning = computed(() => {
+    const formList = this.form1099s();
+    if (formList.length === 0) return null;
 
-  getFieldError(formId: string, field: string): string | null {
-    const touched = this.touchedFields().get(formId);
-    if (!touched || !touched.has(field)) return null;
+    for (let i = 0; i < formList.length; i++) {
+      const form = formList[i];
+      const formLabel = formList.length > 1 ? `1099-NEC #${i + 1}: ` : '';
 
-    const form = this.form1099s().find((f) => f.id === formId);
-    if (!form) return null;
+      if (!this.validation.validateRequired(form.payerName, 'Payer name').isValid) {
+        return `${formLabel}Payer name is required`;
+      }
 
-    if (field === 'payerName') {
-      return this.validation.validateRequired(form.payerName, 'Payer name').error;
+      if (!form.nonemployeeCompensation || form.nonemployeeCompensation <= 0) {
+        return `${formLabel}Enter income amount (Box 1)`;
+      }
     }
+
     return null;
-  }
+  });
 
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-US', {
@@ -478,11 +409,11 @@ export class Form1099EntryComponent {
     }));
   }
 
-  updateField(id: string, field: keyof Form1099NEC, value: unknown): void {
+  updateForm(id: string, changes: Partial<Form1099NEC>): void {
     this.sessionStorage.updateIncome((income) => ({
       ...income,
       form1099s: income.form1099s.map((form) =>
-        form.id === id ? { ...form, [field]: value } : form
+        form.id === id ? { ...form, ...changes } : form
       ),
     }));
   }

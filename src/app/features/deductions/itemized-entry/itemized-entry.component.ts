@@ -179,7 +179,7 @@ type ModalTopic =
               </button>
             </div>
             <p class="field-hint">
-              Out-of-pocket medical costs (only amount exceeding 7.5% of your income is deductible)
+              Enter your TOTAL out-of-pocket medical costs — we'll calculate the deductible amount (portion above 7.5% of your income)
             </p>
             <app-currency-input
               inputId="medical"

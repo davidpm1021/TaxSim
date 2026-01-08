@@ -3,4 +3,5 @@ export * from './educational-modal/educational-modal.component';
 export * from './currency-input/currency-input.component';
 export * from './continue-button/continue-button.component';
 export * from './w2-form/w2-form.component';
+export * from './form-1099-nec-form/form-1099-nec-form.component';
 export * from './validation-message/validation-message.component';

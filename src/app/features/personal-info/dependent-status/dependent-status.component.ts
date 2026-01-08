@@ -298,14 +298,13 @@ export class DependentStatusComponent {
   }
 
   onContinue(): void {
-    const filingStatus = this.sessionStorage.taxReturn().personalInfo.filingStatus;
-    // Skip dependents question for single filers who are claimed as dependents
-    if (this.claimedAsDependent() || filingStatus === 'single') {
+    // If claimed as dependent, user cannot claim their own dependents
+    if (this.claimedAsDependent()) {
       // Go to income section
       this.navigation.completeSection('personal-info');
       this.navigation.navigateTo('/income/types');
     } else {
-      // Ask about dependents
+      // Ask about dependents - even single filers may have children that affect credits
       this.navigation.navigateTo('/personal-info/dependents');
     }
   }
