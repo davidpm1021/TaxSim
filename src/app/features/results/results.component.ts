@@ -10,7 +10,9 @@ import {
   NavigationService,
   SessionStorageService,
   TaxDataService,
+  StateTaxCalculationService,
 } from '@core/services';
+import { StateTaxResult } from '@core/models';
 import {
   NavigationHeaderComponent,
   EducationalModalComponent,
@@ -192,6 +194,47 @@ import {
             </div>
           </div>
 
+          <!-- State Tax Section -->
+          @if (hasStateInfo()) {
+            <div class="breakdown-group state-tax">
+              <h3>
+                State Taxes: {{ stateTaxResult()?.stateName }}
+                <button class="info-btn" (click)="openStateTaxModal()" type="button" aria-label="Learn about state taxes">?</button>
+              </h3>
+              <div class="breakdown-rows">
+                @if (!stateTaxResult()?.hasIncomeTax) {
+                  <div class="breakdown-row no-state-tax">
+                    <span>{{ stateTaxResult()?.stateName }} has no state income tax</span>
+                    <span class="success-badge">$0</span>
+                  </div>
+                } @else {
+                  <div class="breakdown-row">
+                    <span>State Taxable Income</span>
+                    <span>{{ formatCurrency(stateTaxResult()?.taxableIncome || 0) }}</span>
+                  </div>
+                  @if ((stateTaxResult()?.standardDeduction || 0) > 0) {
+                    <div class="breakdown-row">
+                      <span>State Deductions</span>
+                      <span>({{ formatCurrency(stateTaxResult()?.standardDeduction || 0) }})</span>
+                    </div>
+                  }
+                  <div class="breakdown-row">
+                    <span>State Tax</span>
+                    <span>{{ formatCurrency(stateTaxResult()?.stateTaxOwed || 0) }}</span>
+                  </div>
+                  <div class="breakdown-row">
+                    <span>State Withholding</span>
+                    <span>({{ formatCurrency(stateTaxResult()?.stateWithholding || 0) }})</span>
+                  </div>
+                  <div class="breakdown-row total" [class.refund]="(stateTaxResult()?.stateRefundOrOwed || 0) < 0" [class.owed]="(stateTaxResult()?.stateRefundOrOwed || 0) > 0">
+                    <span>{{ (stateTaxResult()?.stateRefundOrOwed || 0) < 0 ? 'State Refund' : 'State Amount Owed' }}</span>
+                    <span>{{ formatCurrency(Math.abs(stateTaxResult()?.stateRefundOrOwed || 0)) }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
           <!-- Final Calculation -->
           <div class="final-calculation" [class.refund]="isRefund()" [class.owed]="!isRefund()">
             <div class="calculation-formula">
@@ -336,6 +379,30 @@ import {
         <strong>Box 2 on your W-2</strong> shows the total federal income tax that
         was withheld from all your paychecks during the year. This is like a
         prepayment toward your annual tax bill.
+      </p>
+    </app-educational-modal>
+
+    <app-educational-modal
+      title="Understanding State Taxes"
+      #stateTaxModal
+    >
+      <p>
+        In addition to federal taxes, most states also have their own income tax.
+        <strong>State tax rules vary widely</strong>—some states have no income tax
+        at all, while others have rates as high as 13%.
+      </p>
+      <p>
+        <strong>Key differences from federal taxes:</strong>
+      </p>
+      <ul>
+        <li>Different tax brackets and rates</li>
+        <li>Different deduction amounts</li>
+        <li>Some states have flat tax rates</li>
+        <li>Nine states have no income tax</li>
+      </ul>
+      <p>
+        Your state tax is calculated separately and filed on a separate return.
+        <strong>Box 17 on your W-2</strong> shows your state tax withholding.
       </p>
     </app-educational-modal>
   `,
@@ -539,6 +606,36 @@ import {
       &.muted {
         color: #94a3b8;
         font-style: italic;
+      }
+
+      &.refund {
+        color: var(--ngpf-success);
+      }
+
+      &.owed {
+        color: var(--ngpf-orange);
+      }
+    }
+
+    /* State Tax Section */
+    .breakdown-group.state-tax {
+      h3 {
+        background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+      }
+    }
+
+    .no-state-tax {
+      background: rgba(16, 185, 129, 0.05);
+      border-radius: 8px;
+      padding: 1rem !important;
+
+      .success-badge {
+        background: var(--ngpf-green);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        font-weight: 600;
+        font-size: 0.875rem;
       }
     }
 
@@ -795,11 +892,16 @@ export class ResultsComponent {
   private readonly navigation = inject(NavigationService);
   private readonly sessionStorage = inject(SessionStorageService);
   private readonly taxData = inject(TaxDataService);
+  private readonly stateTaxService = inject(StateTaxCalculationService);
+
+  // Expose Math for template
+  readonly Math = Math;
 
   private readonly refundModal = viewChild.required<EducationalModalComponent>('refundModal');
   private readonly oweModal = viewChild.required<EducationalModalComponent>('oweModal');
   private readonly bracketsModal = viewChild.required<EducationalModalComponent>('bracketsModal');
   private readonly withholdingModal = viewChild.required<EducationalModalComponent>('withholdingModal');
+  private readonly stateTaxModal = viewChild.required<EducationalModalComponent>('stateTaxModal');
 
   // Get calculation from session storage
   private readonly calculation = computed(() =>
@@ -907,6 +1009,41 @@ export class ResultsComponent {
     return Math.round(estimatedSavings);
   });
 
+  // State tax
+  private readonly stateInfo = computed(() =>
+    this.sessionStorage.taxReturn().stateInfo
+  );
+
+  private readonly personalInfo = computed(() =>
+    this.sessionStorage.taxReturn().personalInfo
+  );
+
+  readonly hasStateInfo = computed(() => {
+    const info = this.stateInfo();
+    return info?.residenceState !== null;
+  });
+
+  readonly stateTaxResult = computed<StateTaxResult | null>(() => {
+    const stateInfo = this.stateInfo();
+    const personalInfo = this.personalInfo();
+    const calc = this.calculation();
+
+    if (!stateInfo?.residenceState || !calc) {
+      return null;
+    }
+
+    const numDependents = personalInfo.dependents?.length ?? 0;
+
+    return this.stateTaxService.calculateStateTax(
+      stateInfo.residenceState,
+      personalInfo.filingStatus,
+      calc.adjustedGrossIncome,
+      stateInfo.stateWages || calc.totalW2Wages,
+      stateInfo.stateWithholding,
+      numDependents
+    );
+  });
+
   formatCurrency(amount: number): string {
     return this.taxData.formatCurrency(amount);
   }
@@ -925,6 +1062,10 @@ export class ResultsComponent {
 
   openWithholdingModal(): void {
     this.withholdingModal().open();
+  }
+
+  openStateTaxModal(): void {
+    this.stateTaxModal().open();
   }
 
   onPrint(): void {

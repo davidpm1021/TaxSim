@@ -100,4 +100,12 @@ export class SessionStorageService {
       calculation,
     });
   }
+
+  updateStateInfo(updater: (current: TaxReturn['stateInfo']) => TaxReturn['stateInfo']): void {
+    const current = this._taxReturn();
+    this.save({
+      ...current,
+      stateInfo: updater(current.stateInfo),
+    });
+  }
 }

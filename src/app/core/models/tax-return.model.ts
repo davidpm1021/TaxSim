@@ -5,6 +5,7 @@ import { Education, createEmptyEducation } from './education.model';
 import { Income, createEmptyIncome } from './income.model';
 import { PersonalInfo, createEmptyPersonalInfo } from './personal-info.model';
 import { TaxCalculation } from './tax-calculation.model';
+import { UserStateInfo, createEmptyUserStateInfo } from './state-tax.model';
 
 export interface TaxReturn {
   personalInfo: PersonalInfo;
@@ -14,6 +15,7 @@ export interface TaxReturn {
   education: Education;
   credits: Credits;
   calculation: TaxCalculation | null;
+  stateInfo: UserStateInfo;
 }
 
 export function createEmptyTaxReturn(): TaxReturn {
@@ -25,5 +27,6 @@ export function createEmptyTaxReturn(): TaxReturn {
     education: createEmptyEducation(),
     credits: createEmptyCredits(),
     calculation: null,
+    stateInfo: createEmptyUserStateInfo(),
   };
 }

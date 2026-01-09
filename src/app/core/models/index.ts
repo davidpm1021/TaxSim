@@ -17,3 +17,4 @@ export * from './credits.model';
 export * from './personal-info.model';
 export * from './tax-calculation.model';
 export * from './tax-return.model';
+export * from './state-tax.model';

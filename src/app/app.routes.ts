@@ -59,6 +59,13 @@ export const routes: Routes = [
             (m) => m.DependentsComponent
           ),
       },
+      {
+        path: 'state',
+        loadComponent: () =>
+          import('./features/personal-info/state-selection/state-selection.component').then(
+            (m) => m.StateSelectionComponent
+          ),
+      },
     ],
   },
   {

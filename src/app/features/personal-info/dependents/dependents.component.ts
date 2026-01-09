@@ -530,8 +530,7 @@ export class DependentsComponent {
   }
 
   onContinue(): void {
-    this.navigation.completeSection('personal-info');
-    this.navigation.navigateTo('/income/types');
+    this.navigation.navigateTo('/personal-info/state');
   }
 
   onBack(): void {
