@@ -70,6 +70,25 @@ import { NavigationService } from '@core/services';
           </div>
         </div>
 
+        <!-- Educational Tools -->
+        <div class="edu-tools-section" [class.visible]="ctaVisible()">
+          <h3 class="edu-tools-title">Quick Tools</h3>
+          <div class="edu-tools-grid">
+            <button class="edu-tool-card" (click)="goToFilingHelper()">
+              <span class="tool-icon">&#x2753;</span>
+              <span class="tool-name">Do I Need to File?</span>
+            </button>
+            <button class="edu-tool-card" (click)="goToCalendar()">
+              <span class="tool-icon">&#x1F4C5;</span>
+              <span class="tool-name">Tax Calendar</span>
+            </button>
+            <button class="edu-tool-card" (click)="goToWhatIf()">
+              <span class="tool-icon">&#x1F4CA;</span>
+              <span class="tool-name">What-If Calculator</span>
+            </button>
+          </div>
+        </div>
+
         <!-- CTA Section -->
         <div class="cta-section" [class.visible]="ctaVisible()">
           <div class="simulation-notice">
@@ -287,6 +306,65 @@ import { NavigationService } from '@core/services';
       line-height: 1.5;
     }
 
+    /* Educational tools */
+    .edu-tools-section {
+      text-align: center;
+      margin-bottom: 2rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s ease 0.3s;
+
+      &.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .edu-tools-title {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 0 0 1rem;
+    }
+
+    .edu-tools-grid {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .edu-tool-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(244, 173, 0, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .tool-icon {
+        font-size: 1.5rem;
+      }
+
+      .tool-name {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+    }
+
     /* CTA section */
     .cta-section {
       text-align: center;
@@ -451,5 +529,17 @@ export class WelcomeComponent implements OnInit {
 
   getStarted(): void {
     this.navigation.navigateTo('/welcome/profile');
+  }
+
+  goToFilingHelper(): void {
+    this.navigation.navigateTo('/educational/filing-helper');
+  }
+
+  goToCalendar(): void {
+    this.navigation.navigateTo('/educational/calendar');
+  }
+
+  goToWhatIf(): void {
+    this.navigation.navigateTo('/educational/what-if');
   }
 }

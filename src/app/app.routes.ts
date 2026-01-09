@@ -225,5 +225,32 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/results/results.component').then((m) => m.ResultsComponent),
   },
+  {
+    path: 'educational',
+    children: [
+      { path: '', redirectTo: 'filing-helper', pathMatch: 'full' },
+      {
+        path: 'what-if',
+        loadComponent: () =>
+          import('./features/educational/what-if-calculator/what-if-calculator.component').then(
+            (m) => m.WhatIfCalculatorComponent
+          ),
+      },
+      {
+        path: 'calendar',
+        loadComponent: () =>
+          import('./features/educational/tax-calendar/tax-calendar.component').then(
+            (m) => m.TaxCalendarComponent
+          ),
+      },
+      {
+        path: 'filing-helper',
+        loadComponent: () =>
+          import('./features/educational/filing-decision-helper/filing-decision-helper.component').then(
+            (m) => m.FilingDecisionHelperComponent
+          ),
+      },
+    ],
+  },
   { path: '**', redirectTo: 'welcome' },
 ];

@@ -10,3 +10,4 @@ export * from './form-1099-k-form/form-1099-k-form.component';
 export * from './form-1098-t-form/form-1098-t-form.component';
 export * from './validation-message/validation-message.component';
 export * from './mileage-calculator/mileage-calculator.component';
+export * from './tax-glossary/tax-glossary.component';
