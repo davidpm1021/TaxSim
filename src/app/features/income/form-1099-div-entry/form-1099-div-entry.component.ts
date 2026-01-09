@@ -1,24 +1,24 @@
 import { ChangeDetectionStrategy, Component, computed, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationService, SessionStorageService, ValidationService } from '@core/services';
-import { Form1099INT, createEmptyForm1099INT } from '@core/models';
+import { Form1099DIV, createEmptyForm1099DIV } from '@core/models';
 import {
   NavigationHeaderComponent,
   EducationalModalComponent,
   ContinueButtonComponent,
-  Form1099INTFormComponent,
+  Form1099DIVFormComponent,
   ValidationMessageComponent,
 } from '@shared/components';
 
 @Component({
-  selector: 'app-form-1099-int-entry',
+  selector: 'app-form-1099-div-entry',
   standalone: true,
   imports: [
     CommonModule,
     NavigationHeaderComponent,
     EducationalModalComponent,
     ContinueButtonComponent,
-    Form1099INTFormComponent,
+    Form1099DIVFormComponent,
     ValidationMessageComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,35 +28,35 @@ import {
     <div class="page-container">
       <div class="content-card">
         <header class="section-header">
-          <h1>Enter your 1099-INT income</h1>
+          <h1>Enter your 1099-DIV income</h1>
           <button class="help-trigger" (click)="openHelpModal()" type="button">
             <span class="help-icon">?</span>
-            <span>About interest income</span>
+            <span>About dividend income</span>
           </button>
         </header>
 
         <p class="instruction">
-          Enter interest income from each 1099-INT form you received from banks or other financial
-          institutions. Box 1 shows your total taxable interest.
+          Enter dividend income from each 1099-DIV form you received from brokerages or investment
+          accounts (like Robinhood, Fidelity, or Schwab). Box 1a shows your total ordinary dividends.
         </p>
 
         <div class="form-list">
-          @for (form of form1099Ints(); track form.id; let i = $index) {
+          @for (form of form1099Divs(); track form.id; let i = $index) {
             <div class="form-wrapper">
-              @if (form1099Ints().length > 1) {
+              @if (form1099Divs().length > 1) {
                 <div class="form-actions">
-                  <span class="form-label">1099-INT #{{ i + 1 }}</span>
+                  <span class="form-label">1099-DIV #{{ i + 1 }}</span>
                   <button
                     type="button"
                     class="remove-btn"
                     (click)="removeForm(form.id)"
-                    aria-label="Remove this 1099-INT"
+                    aria-label="Remove this 1099-DIV"
                   >
                     Remove
                   </button>
                 </div>
               }
-              <app-form-1099-int-form
+              <app-form-1099-div-form
                 [form1099]="form"
                 (form1099Change)="updateForm(form.id, $event)"
               />
@@ -64,20 +64,27 @@ import {
           }
 
           <button type="button" class="add-btn" (click)="addForm()">
-            + Add Another 1099-INT
+            + Add Another 1099-DIV
           </button>
         </div>
 
         <div class="summary-section">
           <div class="summary-bar">
             <div class="summary-item">
-              <span class="summary-label">Total Interest Income:</span>
-              <span class="summary-value">{{ formatCurrency(totalInterest()) }}</span>
+              <span class="summary-label">Total Ordinary Dividends:</span>
+              <span class="summary-value">{{ formatCurrency(totalOrdinaryDividends()) }}</span>
             </div>
-            @if (totalTaxExempt() > 0) {
+            @if (totalQualifiedDividends() > 0) {
               <div class="summary-item secondary">
-                <span class="summary-label">Tax-Exempt Interest:</span>
-                <span class="summary-value">{{ formatCurrency(totalTaxExempt()) }}</span>
+                <span class="summary-label">Qualified Dividends:</span>
+                <span class="summary-value highlight">{{ formatCurrency(totalQualifiedDividends()) }}</span>
+                <span class="tax-note">Lower tax rate!</span>
+              </div>
+            }
+            @if (totalCapitalGains() > 0) {
+              <div class="summary-item secondary">
+                <span class="summary-label">Capital Gain Distributions:</span>
+                <span class="summary-value">{{ formatCurrency(totalCapitalGains()) }}</span>
               </div>
             }
           </div>
@@ -89,7 +96,20 @@ import {
                 <strong>Tax Already Withheld</strong>
                 <p>
                   <strong>{{ formatCurrency(totalFederalWithheld()) }}</strong> was already
-                  withheld from your interest income and sent to the IRS.
+                  withheld from your dividend income and sent to the IRS.
+                </p>
+              </div>
+            </div>
+          }
+
+          @if (totalQualifiedDividends() > 0) {
+            <div class="info-callout">
+              <div class="callout-icon">💡</div>
+              <div class="callout-content">
+                <strong>Good news about qualified dividends!</strong>
+                <p>
+                  Qualified dividends are taxed at lower capital gains rates (0%, 15%, or 20%)
+                  instead of your regular income tax rate. This can save you money!
                 </p>
               </div>
             </div>
@@ -110,31 +130,31 @@ import {
       </div>
     </div>
 
-    <app-educational-modal #helpModal [title]="'Understanding Interest Income'">
+    <app-educational-modal #helpModal [title]="'Understanding Dividend Income'">
       <p>
-        A <strong>1099-INT form</strong> reports interest income you earned from banks, credit
-        unions, or other financial institutions. This is usually from savings accounts, CDs
-        (certificates of deposit), or money market accounts.
+        A <strong>1099-DIV form</strong> reports dividends and distributions you received from
+        investments like stocks, mutual funds, or ETFs. You'll receive this from brokerages like
+        Robinhood, Fidelity, Schwab, or Vanguard.
       </p>
-      <p><strong>Key boxes on form 1099-INT:</strong></p>
+      <p><strong>Key boxes on form 1099-DIV:</strong></p>
       <ul>
         <li>
-          <strong>Box 1 (Interest income)</strong> — Your total taxable interest. This gets added
-          to your other income.
+          <strong>Box 1a (Total ordinary dividends)</strong> — All dividends you received. This is
+          the main number to report.
         </li>
         <li>
-          <strong>Box 3 (U.S. Savings Bonds)</strong> — Interest from Treasury bonds, which may
-          be exempt from state taxes.
+          <strong>Box 1b (Qualified dividends)</strong> — A portion of 1a that qualifies for lower
+          tax rates. The IRS taxes these at 0%, 15%, or 20% instead of your regular rate.
         </li>
         <li>
-          <strong>Box 8 (Tax-exempt interest)</strong> — Interest from municipal bonds that's
-          usually not taxed federally.
+          <strong>Box 2a (Capital gain distributions)</strong> — Long-term capital gains from mutual
+          funds, also taxed at lower rates.
         </li>
       </ul>
       <p>
         <em>
-          Most students receive 1099-INT forms from their savings accounts. Even small amounts
-          (over $10) must be reported!
+          Even if you reinvested your dividends (bought more shares), you still owe taxes on them
+          in the year they were paid!
         </em>
       </p>
     </app-educational-modal>
@@ -261,7 +281,7 @@ import {
 
     .summary-bar {
       padding: 1rem 1.25rem;
-      background: var(--ngpf-blue-pale);
+      background: #f0fdf4; /* Light green to match dividend form */
       border-radius: var(--radius-sm);
       margin-bottom: 1rem;
       display: flex;
@@ -289,6 +309,19 @@ import {
       font-size: 1.125rem;
       font-weight: 600;
       color: var(--ngpf-navy-light);
+
+      &.highlight {
+        color: #15803d;
+      }
+    }
+
+    .tax-note {
+      font-size: 0.75rem;
+      background: #dcfce7;
+      color: #15803d;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 500;
     }
 
     .withholding-notice {
@@ -298,6 +331,7 @@ import {
       background: rgba(16, 185, 129, 0.1);
       border: 1px solid rgba(16, 185, 129, 0.3);
       border-radius: var(--radius-sm);
+      margin-bottom: 1rem;
     }
 
     .notice-icon {
@@ -330,6 +364,36 @@ import {
       }
     }
 
+    .info-callout {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: var(--radius-sm);
+    }
+
+    .callout-icon {
+      flex-shrink: 0;
+      font-size: 1.25rem;
+    }
+
+    .callout-content {
+      flex: 1;
+
+      strong {
+        display: block;
+        color: #92400e;
+        margin-bottom: 0.25rem;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: #92400e;
+      }
+    }
+
     .validation-warning {
       margin-bottom: 1rem;
       padding: 0.75rem 1rem;
@@ -339,60 +403,69 @@ import {
     }
   `,
 })
-export class Form1099INTEntryComponent {
+export class Form1099DIVEntryComponent {
   private readonly navigation = inject(NavigationService);
   private readonly sessionStorage = inject(SessionStorageService);
   private readonly validation = inject(ValidationService);
 
   readonly helpModal = viewChild.required<EducationalModalComponent>('helpModal');
 
-  readonly form1099Ints = computed(() => {
-    const formList = this.sessionStorage.taxReturn().income.form1099Ints;
+  readonly form1099Divs = computed(() => {
+    const formList = this.sessionStorage.taxReturn().income.form1099Divs;
     if (formList.length === 0) {
-      const empty = createEmptyForm1099INT();
+      const empty = createEmptyForm1099DIV();
       this.sessionStorage.updateIncome((income) => ({
         ...income,
-        form1099Ints: [empty],
+        form1099Divs: [empty],
       }));
       return [empty];
     }
     return formList;
   });
 
-  readonly totalInterest = computed(() => {
-    return this.form1099Ints().reduce((sum, form) => sum + (form.interestIncome || 0), 0);
+  readonly totalOrdinaryDividends = computed(() => {
+    return this.form1099Divs().reduce((sum, form) => sum + (form.ordinaryDividends || 0), 0);
   });
 
-  readonly totalTaxExempt = computed(() => {
-    return this.form1099Ints().reduce((sum, form) => sum + (form.taxExemptInterest || 0), 0);
+  readonly totalQualifiedDividends = computed(() => {
+    return this.form1099Divs().reduce((sum, form) => sum + (form.qualifiedDividends || 0), 0);
+  });
+
+  readonly totalCapitalGains = computed(() => {
+    return this.form1099Divs().reduce((sum, form) => sum + (form.capitalGainDistributions || 0), 0);
   });
 
   readonly totalFederalWithheld = computed(() => {
-    return this.form1099Ints().reduce((sum, form) => sum + (form.federalWithheld || 0), 0);
+    return this.form1099Divs().reduce((sum, form) => sum + (form.federalWithheld || 0), 0);
   });
 
   readonly canContinue = computed(() => {
-    const formList = this.form1099Ints();
+    const formList = this.form1099Divs();
     return formList.length > 0 && formList.every((form) =>
       this.validation.validateRequired(form.payerName, 'Payer name').isValid &&
-      form.interestIncome > 0
+      form.ordinaryDividends > 0
     );
   });
 
   readonly validationWarning = computed(() => {
-    const formList = this.form1099Ints();
+    const formList = this.form1099Divs();
     if (formList.length === 0) return null;
 
     for (let i = 0; i < formList.length; i++) {
       const form = formList[i];
-      const formLabel = formList.length > 1 ? `1099-INT #${i + 1}: ` : '';
+      const formLabel = formList.length > 1 ? `1099-DIV #${i + 1}: ` : '';
 
       if (!this.validation.validateRequired(form.payerName, 'Payer name').isValid) {
-        return `${formLabel}Payer/bank name is required`;
+        return `${formLabel}Payer/brokerage name is required`;
       }
 
-      if (!form.interestIncome || form.interestIncome <= 0) {
-        return `${formLabel}Enter interest income amount (Box 1)`;
+      if (!form.ordinaryDividends || form.ordinaryDividends <= 0) {
+        return `${formLabel}Enter ordinary dividends amount (Box 1a)`;
+      }
+
+      // Warning if qualified dividends exceed ordinary dividends
+      if (form.qualifiedDividends > form.ordinaryDividends) {
+        return `${formLabel}Qualified dividends (Box 1b) cannot exceed ordinary dividends (Box 1a)`;
       }
     }
 
@@ -414,32 +487,30 @@ export class Form1099INTEntryComponent {
   addForm(): void {
     this.sessionStorage.updateIncome((income) => ({
       ...income,
-      form1099Ints: [...income.form1099Ints, createEmptyForm1099INT()],
+      form1099Divs: [...income.form1099Divs, createEmptyForm1099DIV()],
     }));
   }
 
   removeForm(id: string): void {
     this.sessionStorage.updateIncome((income) => ({
       ...income,
-      form1099Ints: income.form1099Ints.filter((form) => form.id !== id),
+      form1099Divs: income.form1099Divs.filter((form) => form.id !== id),
     }));
   }
 
-  updateForm(id: string, changes: Partial<Form1099INT>): void {
+  updateForm(id: string, changes: Partial<Form1099DIV>): void {
     this.sessionStorage.updateIncome((income) => ({
       ...income,
-      form1099Ints: income.form1099Ints.map((form) =>
+      form1099Divs: income.form1099Divs.map((form) =>
         form.id === id ? { ...form, ...changes } : form
       ),
     }));
   }
 
   onContinue(): void {
-    // Go to next income type if selected, otherwise to summary
+    // Go to 1099-K if user has that income, otherwise to summary
     const income = this.sessionStorage.taxReturn().income;
-    if (income.hasDividendIncome) {
-      this.navigation.navigateTo('/income/1099-div');
-    } else if (income.has1099KIncome) {
+    if (income.has1099KIncome) {
       this.navigation.navigateTo('/income/1099-k');
     } else {
       this.navigation.navigateTo('/income/summary');
@@ -447,9 +518,11 @@ export class Form1099INTEntryComponent {
   }
 
   onBack(): void {
-    // Go back to 1099-NEC if user has that income, then W-2, then income types
+    // Go back through the income flow
     const income = this.sessionStorage.taxReturn().income;
-    if (income.has1099Income) {
+    if (income.hasInterestIncome) {
+      this.navigation.navigateTo('/income/1099-int');
+    } else if (income.has1099Income) {
       this.navigation.navigateTo('/income/1099');
     } else if (income.hasW2Income) {
       this.navigation.navigateTo('/income/w2');

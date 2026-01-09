@@ -419,9 +419,14 @@ export class Form1099EntryComponent {
   }
 
   onContinue(): void {
-    // Navigate to interest income if selected, otherwise summary
-    if (this.sessionStorage.taxReturn().income.hasInterestIncome) {
+    // Navigate to next income type if selected, otherwise summary
+    const income = this.sessionStorage.taxReturn().income;
+    if (income.hasInterestIncome) {
       this.navigation.navigateTo('/income/1099-int');
+    } else if (income.hasDividendIncome) {
+      this.navigation.navigateTo('/income/1099-div');
+    } else if (income.has1099KIncome) {
+      this.navigation.navigateTo('/income/1099-k');
     } else {
       this.navigation.navigateTo('/income/summary');
     }

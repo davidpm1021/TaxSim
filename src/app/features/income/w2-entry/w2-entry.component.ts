@@ -415,6 +415,10 @@ export class W2EntryComponent {
       this.navigation.navigateTo('/income/1099');
     } else if (income.hasInterestIncome) {
       this.navigation.navigateTo('/income/1099-int');
+    } else if (income.hasDividendIncome) {
+      this.navigation.navigateTo('/income/1099-div');
+    } else if (income.has1099KIncome) {
+      this.navigation.navigateTo('/income/1099-k');
     } else {
       this.navigation.navigateTo('/income/summary');
     }

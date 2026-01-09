@@ -102,6 +102,66 @@ import {
               }
             </div>
           }
+
+          @if (hasDividendIncome()) {
+            <div class="income-section">
+              <h2>1099-DIV Dividend Income</h2>
+              <div class="income-items">
+                @for (form of form1099Divs(); track form.id) {
+                  <div class="income-item">
+                    <span class="item-name">{{ form.payerName }}</span>
+                    <span class="item-amount">{{ formatCurrency(form.ordinaryDividends) }}</span>
+                  </div>
+                }
+              </div>
+              <div class="section-subtotal">
+                <span>Ordinary Dividends Total</span>
+                <span>{{ formatCurrency(totalDividendIncome()) }}</span>
+              </div>
+              @if (totalQualifiedDividends() > 0) {
+                <div class="qualified-note">
+                  <span class="note-label">Qualified dividends (lower tax rate):</span>
+                  <span class="note-value highlight">{{ formatCurrency(totalQualifiedDividends()) }}</span>
+                </div>
+              }
+              @if (totalDividendWithheld() > 0) {
+                <div class="withheld-note">
+                  <span class="note-label">Federal tax already withheld:</span>
+                  <span class="note-value">{{ formatCurrency(totalDividendWithheld()) }}</span>
+                </div>
+              }
+            </div>
+          }
+
+          @if (has1099KIncome()) {
+            <div class="income-section">
+              <h2>1099-K Payment App Income</h2>
+              <div class="income-items">
+                @for (form of form1099Ks(); track form.id) {
+                  <div class="income-item">
+                    <span class="item-name">{{ form.payerName }}</span>
+                    <span class="item-amount">{{ formatCurrency(form.grossAmount) }}</span>
+                  </div>
+                }
+              </div>
+              <div class="section-subtotal">
+                <span>1099-K Total</span>
+                <span>{{ formatCurrency(total1099KIncome()) }}</span>
+              </div>
+              @if (total1099KWithheld() > 0) {
+                <div class="withheld-note">
+                  <span class="note-label">Federal tax already withheld:</span>
+                  <span class="note-value">{{ formatCurrency(total1099KWithheld()) }}</span>
+                </div>
+              }
+              <div class="se-tax-note">
+                <div class="note-icon">!</div>
+                <div class="note-content">
+                  <span class="note-label">This income may be subject to self-employment tax if from a business.</span>
+                </div>
+              </div>
+            </div>
+          }
         </div>
 
         <div class="total-section">
@@ -279,6 +339,33 @@ import {
       font-size: 0.875rem;
     }
 
+    .qualified-note {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+
+      .note-label {
+        color: #15803d;
+      }
+
+      .note-value {
+        color: #15803d;
+        font-weight: 600;
+
+        &.highlight {
+          background: #dcfce7;
+          padding: 0.125rem 0.5rem;
+          border-radius: 9999px;
+        }
+      }
+    }
+
     .note-label {
       color: var(--ngpf-success);
     }
@@ -404,10 +491,14 @@ export class IncomeSummaryComponent {
   readonly hasW2Income = computed(() => this.sessionStorage.taxReturn().income.hasW2Income);
   readonly has1099Income = computed(() => this.sessionStorage.taxReturn().income.has1099Income);
   readonly hasInterestIncome = computed(() => this.sessionStorage.taxReturn().income.hasInterestIncome);
+  readonly hasDividendIncome = computed(() => this.sessionStorage.taxReturn().income.hasDividendIncome);
+  readonly has1099KIncome = computed(() => this.sessionStorage.taxReturn().income.has1099KIncome);
 
   readonly w2s = computed(() => this.sessionStorage.taxReturn().income.w2s);
   readonly form1099s = computed(() => this.sessionStorage.taxReturn().income.form1099s);
   readonly form1099Ints = computed(() => this.sessionStorage.taxReturn().income.form1099Ints);
+  readonly form1099Divs = computed(() => this.sessionStorage.taxReturn().income.form1099Divs);
+  readonly form1099Ks = computed(() => this.sessionStorage.taxReturn().income.form1099Ks);
 
   readonly totalW2Wages = computed(() => {
     return this.w2s().reduce((sum, w2) => sum + (w2.wagesTips || 0), 0);
@@ -429,6 +520,26 @@ export class IncomeSummaryComponent {
     return this.form1099Ints().reduce((sum, form) => sum + (form.federalWithheld || 0), 0);
   });
 
+  readonly totalDividendIncome = computed(() => {
+    return this.form1099Divs().reduce((sum, form) => sum + (form.ordinaryDividends || 0), 0);
+  });
+
+  readonly totalQualifiedDividends = computed(() => {
+    return this.form1099Divs().reduce((sum, form) => sum + (form.qualifiedDividends || 0), 0);
+  });
+
+  readonly totalDividendWithheld = computed(() => {
+    return this.form1099Divs().reduce((sum, form) => sum + (form.federalWithheld || 0), 0);
+  });
+
+  readonly total1099KIncome = computed(() => {
+    return this.form1099Ks().reduce((sum, form) => sum + (form.grossAmount || 0), 0);
+  });
+
+  readonly total1099KWithheld = computed(() => {
+    return this.form1099Ks().reduce((sum, form) => sum + (form.federalWithheld || 0), 0);
+  });
+
   readonly estimatedSETax = computed(() => {
     const netEarnings = this.total1099Income() * SELF_EMPLOYMENT_TAX.netEarningsMultiplier;
     return netEarnings * SELF_EMPLOYMENT_TAX.rate;
@@ -439,7 +550,8 @@ export class IncomeSummaryComponent {
   });
 
   readonly totalGrossIncome = computed(() => {
-    return this.totalW2Wages() + this.total1099Income() + this.totalInterestIncome();
+    return this.totalW2Wages() + this.total1099Income() + this.totalInterestIncome() +
+           this.totalDividendIncome() + this.total1099KIncome();
   });
 
   readonly adjustedGrossIncome = computed(() => {
@@ -461,7 +573,11 @@ export class IncomeSummaryComponent {
 
   onBack(): void {
     // Go back to the last income entry form the user used
-    if (this.hasInterestIncome()) {
+    if (this.has1099KIncome()) {
+      this.navigation.navigateTo('/income/1099-k');
+    } else if (this.hasDividendIncome()) {
+      this.navigation.navigateTo('/income/1099-div');
+    } else if (this.hasInterestIncome()) {
       this.navigation.navigateTo('/income/1099-int');
     } else if (this.has1099Income()) {
       this.navigation.navigateTo('/income/1099');

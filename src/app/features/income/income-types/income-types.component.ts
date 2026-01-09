@@ -80,6 +80,38 @@ import {
             </div>
             <span class="check-mark">✓</span>
           </label>
+
+          <label class="income-option" [class.selected]="hasDividends()">
+            <input
+              type="checkbox"
+              [checked]="hasDividends()"
+              (change)="toggleDividends()"
+            />
+            <div class="option-icon">DIV</div>
+            <div class="option-content">
+              <span class="option-label">1099-DIV Dividends</span>
+              <span class="option-description">
+                Dividends from stocks, mutual funds, or investment accounts (Robinhood, etc.)
+              </span>
+            </div>
+            <span class="check-mark">✓</span>
+          </label>
+
+          <label class="income-option" [class.selected]="has1099K()">
+            <input
+              type="checkbox"
+              [checked]="has1099K()"
+              (change)="toggle1099K()"
+            />
+            <div class="option-icon">1099-K</div>
+            <div class="option-content">
+              <span class="option-label">1099-K Payment Apps</span>
+              <span class="option-description">
+                Income from Venmo, PayPal, Cash App, Etsy, or other payment platforms
+              </span>
+            </div>
+            <span class="check-mark">✓</span>
+          </label>
         </div>
 
         <app-continue-button
@@ -93,25 +125,25 @@ import {
     <app-educational-modal #helpModal [title]="'Types of Income'">
       <p>
         <strong>W-2 Income</strong> is what you earn as an employee. Your employer withholds taxes
-        from each paycheck and sends them to the IRS for you. At tax time, you report what you
-        earned and what was already withheld.
+        from each paycheck and sends them to the IRS for you.
       </p>
       <p>
         <strong>1099-NEC Income</strong> is what you earn as an independent contractor or from gig
-        work (like DoorDash, tutoring, or freelance jobs). No taxes are withheld—you receive the
-        full amount and are responsible for paying taxes yourself. You'll also owe self-employment
-        tax (15.3%) to cover Social Security and Medicare.
+        work (like DoorDash, tutoring, or freelance jobs). No taxes are withheld—you'll owe
+        self-employment tax (15.3%) to cover Social Security and Medicare.
       </p>
       <p>
-        <strong>1099-INT Income</strong> is interest you earn from bank accounts, savings accounts,
-        or CDs. Banks report this to the IRS if you earn more than $10 in interest. This income is
-        taxed as regular income.
+        <strong>1099-INT Income</strong> is interest from bank accounts or CDs. Banks report this
+        if you earn more than $10.
       </p>
       <p>
-        <em>
-          Example: If you work at a coffee shop, you get a W-2. If you mow lawns for neighbors,
-          that's 1099-NEC income. If you have a savings account that earns interest, that's 1099-INT income.
-        </em>
+        <strong>1099-DIV Income</strong> is dividends from stocks or investment accounts like
+        Robinhood. "Qualified dividends" are taxed at lower rates!
+      </p>
+      <p>
+        <strong>1099-K Income</strong> is payments from apps like Venmo, PayPal, or online selling.
+        Starting in 2024, platforms report payments over $600. Don't double-count income that's
+        also on a 1099-NEC!
       </p>
     </app-educational-modal>
   `,
@@ -337,7 +369,11 @@ export class IncomeTypesComponent {
   readonly hasW2 = computed(() => this.sessionStorage.taxReturn().income.hasW2Income);
   readonly has1099 = computed(() => this.sessionStorage.taxReturn().income.has1099Income);
   readonly hasInterest = computed(() => this.sessionStorage.taxReturn().income.hasInterestIncome);
-  readonly hasAnyIncome = computed(() => this.hasW2() || this.has1099() || this.hasInterest());
+  readonly hasDividends = computed(() => this.sessionStorage.taxReturn().income.hasDividendIncome);
+  readonly has1099K = computed(() => this.sessionStorage.taxReturn().income.has1099KIncome);
+  readonly hasAnyIncome = computed(() =>
+    this.hasW2() || this.has1099() || this.hasInterest() || this.hasDividends() || this.has1099K()
+  );
 
   toggleW2(): void {
     this.sessionStorage.updateIncome((income) => ({
@@ -363,6 +399,22 @@ export class IncomeTypesComponent {
     }));
   }
 
+  toggleDividends(): void {
+    this.sessionStorage.updateIncome((income) => ({
+      ...income,
+      hasDividendIncome: !income.hasDividendIncome,
+      form1099Divs: !income.hasDividendIncome && income.form1099Divs.length === 0 ? [] : income.form1099Divs,
+    }));
+  }
+
+  toggle1099K(): void {
+    this.sessionStorage.updateIncome((income) => ({
+      ...income,
+      has1099KIncome: !income.has1099KIncome,
+      form1099Ks: !income.has1099KIncome && income.form1099Ks.length === 0 ? [] : income.form1099Ks,
+    }));
+  }
+
   openHelpModal(): void {
     this.helpModal().open();
   }
@@ -374,6 +426,10 @@ export class IncomeTypesComponent {
       this.navigation.navigateTo('/income/1099');
     } else if (this.hasInterest()) {
       this.navigation.navigateTo('/income/1099-int');
+    } else if (this.hasDividends()) {
+      this.navigation.navigateTo('/income/1099-div');
+    } else if (this.has1099K()) {
+      this.navigation.navigateTo('/income/1099-k');
     }
   }
 

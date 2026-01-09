@@ -5,5 +5,7 @@ export * from './continue-button/continue-button.component';
 export * from './w2-form/w2-form.component';
 export * from './form-1099-nec-form/form-1099-nec-form.component';
 export * from './form-1099-int-form/form-1099-int-form.component';
+export * from './form-1099-div-form/form-1099-div-form.component';
+export * from './form-1099-k-form/form-1099-k-form.component';
 export * from './form-1098-t-form/form-1098-t-form.component';
 export * from './validation-message/validation-message.component';

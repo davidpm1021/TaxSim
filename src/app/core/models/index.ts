@@ -4,6 +4,8 @@ export * from './student-profile.model';
 export * from './w2.model';
 export * from './form-1099-nec.model';
 export * from './form-1099-int.model';
+export * from './form-1099-div.model';
+export * from './form-1099-k.model';
 export * from './form-1098-t.model';
 export * from './income.model';
 export * from './adjustments.model';

@@ -111,6 +111,34 @@ export const routes: Routes = [
           ),
       },
       {
+        path: '1099-div',
+        loadComponent: () =>
+          import('./features/income/form-1099-div-entry/form-1099-div-entry.component').then(
+            (m) => m.Form1099DIVEntryComponent
+          ),
+      },
+      {
+        path: '1099-div/:index',
+        loadComponent: () =>
+          import('./features/income/form-1099-div-entry/form-1099-div-entry.component').then(
+            (m) => m.Form1099DIVEntryComponent
+          ),
+      },
+      {
+        path: '1099-k',
+        loadComponent: () =>
+          import('./features/income/form-1099-k-entry/form-1099-k-entry.component').then(
+            (m) => m.Form1099KEntryComponent
+          ),
+      },
+      {
+        path: '1099-k/:index',
+        loadComponent: () =>
+          import('./features/income/form-1099-k-entry/form-1099-k-entry.component').then(
+            (m) => m.Form1099KEntryComponent
+          ),
+      },
+      {
         path: 'summary',
         loadComponent: () =>
           import('./features/income/income-summary/income-summary.component').then(
@@ -148,6 +176,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/education/form-1098-t-entry/form-1098-t-entry.component').then(
             (m) => m.Form1098TEntryComponent
+          ),
+      },
+      {
+        path: 'scholarship-calculator',
+        loadComponent: () =>
+          import('./features/education/scholarship-calculator/scholarship-calculator.component').then(
+            (m) => m.ScholarshipCalculatorComponent
           ),
       },
       {
