@@ -29,21 +29,21 @@ describe('TaxDataService', () => {
     it('should include standard deduction for each status', () => {
       const options = service.getFilingStatusOptions();
       const single = options.find((o) => o.value === 'single');
-      expect(single?.standardDeduction).toBe(15000);
+      expect(single?.standardDeduction).toBe(15750);
     });
   });
 
   describe('getStandardDeduction', () => {
     it('should return correct deduction for single', () => {
-      expect(service.getStandardDeduction('single')).toBe(15000);
+      expect(service.getStandardDeduction('single')).toBe(15750);
     });
 
     it('should return correct deduction for married-jointly', () => {
-      expect(service.getStandardDeduction('married-jointly')).toBe(30000);
+      expect(service.getStandardDeduction('married-jointly')).toBe(31500);
     });
 
     it('should return correct deduction for head-of-household', () => {
-      expect(service.getStandardDeduction('head-of-household')).toBe(22500);
+      expect(service.getStandardDeduction('head-of-household')).toBe(23625);
     });
   });
 

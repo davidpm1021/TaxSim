@@ -129,16 +129,16 @@ describe('TaxCalculationService', () => {
   });
 
   describe('calculateStandardDeduction', () => {
-    it('should return $15,000 for single filer', () => {
-      expect(service.calculateStandardDeduction('single', false, 0)).toBe(15000);
+    it('should return $15,750 for single filer', () => {
+      expect(service.calculateStandardDeduction('single', false, 0)).toBe(15750);
     });
 
-    it('should return $30,000 for married filing jointly', () => {
-      expect(service.calculateStandardDeduction('married-jointly', false, 0)).toBe(30000);
+    it('should return $31,500 for married filing jointly', () => {
+      expect(service.calculateStandardDeduction('married-jointly', false, 0)).toBe(31500);
     });
 
-    it('should return $22,500 for head of household', () => {
-      expect(service.calculateStandardDeduction('head-of-household', false, 0)).toBe(22500);
+    it('should return $23,625 for head of household', () => {
+      expect(service.calculateStandardDeduction('head-of-household', false, 0)).toBe(23625);
     });
 
     describe('when claimed as dependent', () => {
@@ -152,8 +152,8 @@ describe('TaxCalculationService', () => {
       });
 
       it('should cap at full standard deduction', () => {
-        // Even with high earned income, cap at $15,000 for single
-        expect(service.calculateStandardDeduction('single', true, 50000)).toBe(15000);
+        // Even with high earned income, cap at $15,750 for single
+        expect(service.calculateStandardDeduction('single', true, 50000)).toBe(15750);
       });
 
       it('should return minimum when earned income + $450 is less', () => {
@@ -404,14 +404,14 @@ describe('TaxCalculationService', () => {
 
       expect(result.grossIncome).toBe(50000);
       expect(result.adjustedGrossIncome).toBe(50000);
-      expect(result.standardDeductionAmount).toBe(15000);
-      expect(result.taxableIncome).toBe(35000);
-      // Tax on $35,000: $11,925 at 10% + $23,075 at 12% = $1,192.50 + $2,769 = $3,961.50
-      expect(result.taxBeforeCredits).toBeCloseTo(3961.5, 2);
+      expect(result.standardDeductionAmount).toBe(15750);
+      expect(result.taxableIncome).toBe(34250);
+      // Tax on $34,250: $11,925 at 10% + $22,325 at 12% = $1,192.50 + $2,679 = $3,871.50
+      expect(result.taxBeforeCredits).toBeCloseTo(3871.5, 2);
       expect(result.selfEmploymentTax).toBe(0);
       expect(result.totalWithholding).toBe(5000);
       expect(result.isRefund).toBe(true);
-      expect(result.refundOrOwed).toBeCloseTo(1038.5, 2); // $5,000 - $3,961.50
+      expect(result.refundOrOwed).toBeCloseTo(1128.5, 2); // $5,000 - $3,871.50
     });
 
     it('should calculate return with 1099 income and SE tax', () => {
@@ -433,8 +433,8 @@ describe('TaxCalculationService', () => {
       expect(result.selfEmploymentTax).toBeCloseTo(4238.87, 2);
       expect(result.selfEmploymentTaxDeduction).toBeCloseTo(2119.44, 2);
       expect(result.adjustedGrossIncome).toBeCloseTo(27880.56, 2);
-      // Taxable: $27,880.56 - $15,000 = $12,880.56
-      expect(result.taxableIncome).toBeCloseTo(12880.56, 2);
+      // Taxable: $27,880.56 - $15,750 = $12,130.56
+      expect(result.taxableIncome).toBeCloseTo(12130.56, 2);
     });
 
     it('should calculate return with child tax credit', () => {
@@ -464,10 +464,10 @@ describe('TaxCalculationService', () => {
       const result = service.calculateFullReturn(taxReturn);
 
       expect(result.totalCredits).toBe(2200);
-      // Tax: ~$3,961.50 - $2,200 CTC = ~$1,761.50
-      expect(result.totalTax).toBeCloseTo(1761.5, 2);
-      // Refund: $6,000 - $1,761.50 = $4,238.50
-      expect(result.refundOrOwed).toBeCloseTo(4238.5, 2);
+      // Tax: ~$3,871.50 - $2,200 CTC = ~$1,671.50
+      expect(result.totalTax).toBeCloseTo(1671.5, 2);
+      // Refund: $6,000 - $1,671.50 = $4,328.50
+      expect(result.refundOrOwed).toBeCloseTo(4328.5, 2);
     });
 
     it('should use itemized deductions when larger', () => {

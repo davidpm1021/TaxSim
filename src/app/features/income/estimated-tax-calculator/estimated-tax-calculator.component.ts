@@ -640,7 +640,7 @@ export class EstimatedTaxCalculatorComponent {
 
     // Apply standard deduction (simplified)
     const status = this.sessionStorage.taxReturn().personalInfo.filingStatus || 'single';
-    const standardDeduction = status === 'married-jointly' ? 30000 : status === 'head-of-household' ? 22500 : 15000;
+    const standardDeduction = status === 'married-jointly' ? 31500 : status === 'head-of-household' ? 23625 : 15750;
     const taxableIncome = Math.max(0, adjustedIncome - standardDeduction);
 
     // Calculate tax using brackets

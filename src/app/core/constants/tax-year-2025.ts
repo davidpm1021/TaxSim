@@ -39,11 +39,11 @@ export const TAX_BRACKETS: Record<FilingStatus, TaxBracket[]> = {
   ],
 };
 
-// Standard deductions
+// Standard deductions (2025 - updated per OBBBA)
 export const STANDARD_DEDUCTIONS: Record<FilingStatus, number> = {
-  'single': 15000,
-  'married-jointly': 30000,
-  'head-of-household': 22500,
+  'single': 15750,
+  'married-jointly': 31500,
+  'head-of-household': 23625,
 };
 
 // Standard deduction for dependents: Greater of $1,350 or earned income + $450 (capped at full standard deduction)
