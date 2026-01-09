@@ -162,6 +162,52 @@ import {
               </div>
             </div>
           }
+
+          @if (hasScheduleCExpenses()) {
+            <div class="income-section expenses-section">
+              <h2>Business Expenses (Schedule C)</h2>
+              <div class="income-items">
+                @if (scheduleC()!.mileage.calculatedDeduction > 0) {
+                  <div class="income-item expense">
+                    <span class="item-name">Mileage ({{ scheduleC()!.mileage.totalMiles | number }} miles)</span>
+                    <span class="item-amount">- {{ formatCurrency(scheduleC()!.mileage.calculatedDeduction) }}</span>
+                  </div>
+                }
+                @if (scheduleC()!.supplies > 0) {
+                  <div class="income-item expense">
+                    <span class="item-name">Supplies</span>
+                    <span class="item-amount">- {{ formatCurrency(scheduleC()!.supplies) }}</span>
+                  </div>
+                }
+                @if (scheduleC()!.phoneInternet > 0) {
+                  <div class="income-item expense">
+                    <span class="item-name">Phone & Internet</span>
+                    <span class="item-amount">- {{ formatCurrency(scheduleC()!.phoneInternet) }}</span>
+                  </div>
+                }
+                @if (scheduleC()!.platformFees > 0) {
+                  <div class="income-item expense">
+                    <span class="item-name">Platform Fees</span>
+                    <span class="item-amount">- {{ formatCurrency(scheduleC()!.platformFees) }}</span>
+                  </div>
+                }
+                @if (scheduleC()!.otherExpenses > 0) {
+                  <div class="income-item expense">
+                    <span class="item-name">{{ scheduleC()!.otherExpensesDescription || 'Other Expenses' }}</span>
+                    <span class="item-amount">- {{ formatCurrency(scheduleC()!.otherExpenses) }}</span>
+                  </div>
+                }
+              </div>
+              <div class="section-subtotal expense-total">
+                <span>Total Business Expenses</span>
+                <span>- {{ formatCurrency(totalScheduleCExpenses()) }}</span>
+              </div>
+              <div class="net-profit-note">
+                <span class="note-label">Net Self-Employment Profit:</span>
+                <span class="note-value">{{ formatCurrency(netSelfEmploymentIncome()) }}</span>
+              </div>
+            </div>
+          }
         </div>
 
         <div class="total-section">
@@ -318,6 +364,17 @@ import {
       color: var(--ngpf-navy-dark);
     }
 
+    .income-item.expense {
+      .item-amount {
+        color: var(--ngpf-error);
+      }
+    }
+
+    .expenses-section {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+
     .section-subtotal {
       display: flex;
       justify-content: space-between;
@@ -326,6 +383,32 @@ import {
       border-top: 2px solid var(--ngpf-gray);
       font-weight: 600;
       color: var(--ngpf-navy-dark);
+    }
+
+    .expense-total {
+      color: var(--ngpf-error);
+      border-top-color: var(--ngpf-error);
+    }
+
+    .net-profit-note {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: var(--ngpf-white);
+      border: 1px solid var(--ngpf-gray-light);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+
+      .note-label {
+        color: var(--ngpf-gray-dark);
+      }
+
+      .note-value {
+        color: var(--ngpf-navy-light);
+        font-weight: 700;
+      }
     }
 
     .withheld-note {
@@ -493,6 +576,11 @@ export class IncomeSummaryComponent {
   readonly hasInterestIncome = computed(() => this.sessionStorage.taxReturn().income.hasInterestIncome);
   readonly hasDividendIncome = computed(() => this.sessionStorage.taxReturn().income.hasDividendIncome);
   readonly has1099KIncome = computed(() => this.sessionStorage.taxReturn().income.has1099KIncome);
+  readonly scheduleC = computed(() => this.sessionStorage.taxReturn().income.scheduleC);
+  readonly hasScheduleCExpenses = computed(() => {
+    const sc = this.scheduleC();
+    return sc && sc.totalExpenses > 0;
+  });
 
   readonly w2s = computed(() => this.sessionStorage.taxReturn().income.w2s);
   readonly form1099s = computed(() => this.sessionStorage.taxReturn().income.form1099s);
@@ -540,8 +628,18 @@ export class IncomeSummaryComponent {
     return this.form1099Ks().reduce((sum, form) => sum + (form.federalWithheld || 0), 0);
   });
 
+  readonly totalScheduleCExpenses = computed(() => {
+    return this.scheduleC()?.totalExpenses ?? 0;
+  });
+
+  readonly netSelfEmploymentIncome = computed(() => {
+    const gross = this.total1099Income() + this.total1099KIncome();
+    return Math.max(0, gross - this.totalScheduleCExpenses());
+  });
+
   readonly estimatedSETax = computed(() => {
-    const netEarnings = this.total1099Income() * SELF_EMPLOYMENT_TAX.netEarningsMultiplier;
+    // Calculate SE tax on NET self-employment income (after expenses)
+    const netEarnings = this.netSelfEmploymentIncome() * SELF_EMPLOYMENT_TAX.netEarningsMultiplier;
     return netEarnings * SELF_EMPLOYMENT_TAX.rate;
   });
 
@@ -550,11 +648,13 @@ export class IncomeSummaryComponent {
   });
 
   readonly totalGrossIncome = computed(() => {
-    return this.totalW2Wages() + this.total1099Income() + this.totalInterestIncome() +
-           this.totalDividendIncome() + this.total1099KIncome();
+    // Gross income uses NET self-employment income (after Schedule C expenses)
+    return this.totalW2Wages() + this.netSelfEmploymentIncome() + this.totalInterestIncome() +
+           this.totalDividendIncome();
   });
 
   readonly adjustedGrossIncome = computed(() => {
+    // AGI = Gross income - 1/2 SE tax deduction
     return this.totalGrossIncome() - this.seDeduction();
   });
 
@@ -572,15 +672,14 @@ export class IncomeSummaryComponent {
   }
 
   onBack(): void {
-    // Go back to the last income entry form the user used
-    if (this.has1099KIncome()) {
-      this.navigation.navigateTo('/income/1099-k');
+    // Go back to Schedule C if user has self-employment income, otherwise to the last income entry form
+    const hasSelfEmployment = this.has1099Income() || this.has1099KIncome();
+    if (hasSelfEmployment) {
+      this.navigation.navigateTo('/income/schedule-c');
     } else if (this.hasDividendIncome()) {
       this.navigation.navigateTo('/income/1099-div');
     } else if (this.hasInterestIncome()) {
       this.navigation.navigateTo('/income/1099-int');
-    } else if (this.has1099Income()) {
-      this.navigation.navigateTo('/income/1099');
     } else if (this.hasW2Income()) {
       this.navigation.navigateTo('/income/w2');
     } else {

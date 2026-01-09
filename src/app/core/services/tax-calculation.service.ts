@@ -395,13 +395,26 @@ export class TaxCalculationService {
   calculateFullReturn(taxReturn: TaxReturn): TaxCalculation {
     const { personalInfo, income, deductions, adjustments } = taxReturn;
 
-    // Calculate total income
+    // Calculate total income from all sources
     const totalW2Wages = income.w2s.reduce((sum, w2) => sum + w2.wagesTips, 0);
-    const total1099Income = income.form1099s.reduce((sum, f) => sum + f.nonemployeeCompensation, 0);
-    const grossIncome = totalW2Wages + total1099Income;
+    const gross1099NECIncome = income.form1099s.reduce((sum, f) => sum + f.nonemployeeCompensation, 0);
+    const gross1099KIncome = income.form1099Ks?.reduce((sum, f) => sum + f.grossAmount, 0) || 0;
+    const totalInterestIncome = income.form1099Ints?.reduce((sum, f) => sum + f.interestIncome, 0) || 0;
+    const totalDividendIncome = income.form1099Divs?.reduce((sum, f) => sum + f.ordinaryDividends, 0) || 0;
 
-    // Calculate self-employment tax
-    const seResult = this.calculateSelfEmploymentTax(total1099Income);
+    // Calculate Schedule C expenses
+    const scheduleCExpenses = income.scheduleC?.totalExpenses || 0;
+
+    // Calculate NET self-employment income (gross - expenses)
+    const grossSEIncome = gross1099NECIncome + gross1099KIncome;
+    const netSEIncome = Math.max(0, grossSEIncome - scheduleCExpenses);
+
+    // Total gross income for tax purposes (uses NET SE income)
+    const total1099Income = netSEIncome; // For backwards compatibility with existing code
+    const grossIncome = totalW2Wages + netSEIncome + totalInterestIncome + totalDividendIncome;
+
+    // Calculate self-employment tax on NET SE income
+    const seResult = this.calculateSelfEmploymentTax(netSEIncome);
     const selfEmploymentTax = seResult.selfEmploymentTax;
     const selfEmploymentTaxDeduction = seResult.deductiblePortion;
 

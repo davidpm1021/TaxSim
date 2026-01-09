@@ -419,7 +419,7 @@ export class Form1099EntryComponent {
   }
 
   onContinue(): void {
-    // Navigate to next income type if selected, otherwise summary
+    // Navigate to next income type if selected, then Schedule C for expenses, otherwise summary
     const income = this.sessionStorage.taxReturn().income;
     if (income.hasInterestIncome) {
       this.navigation.navigateTo('/income/1099-int');
@@ -428,7 +428,8 @@ export class Form1099EntryComponent {
     } else if (income.has1099KIncome) {
       this.navigation.navigateTo('/income/1099-k');
     } else {
-      this.navigation.navigateTo('/income/summary');
+      // Has 1099-NEC income, go to Schedule C for expenses
+      this.navigation.navigateTo('/income/schedule-c');
     }
   }
 

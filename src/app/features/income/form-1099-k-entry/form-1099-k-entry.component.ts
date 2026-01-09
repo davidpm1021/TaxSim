@@ -531,7 +531,13 @@ export class Form1099KEntryComponent {
   }
 
   onContinue(): void {
-    this.navigation.navigateTo('/income/summary');
+    // Go to Schedule C if user has self-employment income (1099-NEC or 1099-K)
+    const income = this.sessionStorage.taxReturn().income;
+    if (income.has1099Income || income.has1099KIncome) {
+      this.navigation.navigateTo('/income/schedule-c');
+    } else {
+      this.navigation.navigateTo('/income/summary');
+    }
   }
 
   onBack(): void {

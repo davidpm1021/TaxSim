@@ -508,10 +508,13 @@ export class Form1099DIVEntryComponent {
   }
 
   onContinue(): void {
-    // Go to 1099-K if user has that income, otherwise to summary
+    // Go to 1099-K if user has that income, then Schedule C for self-employment, otherwise to summary
     const income = this.sessionStorage.taxReturn().income;
     if (income.has1099KIncome) {
       this.navigation.navigateTo('/income/1099-k');
+    } else if (income.has1099Income) {
+      // Has 1099-NEC income, go to Schedule C for expenses
+      this.navigation.navigateTo('/income/schedule-c');
     } else {
       this.navigation.navigateTo('/income/summary');
     }

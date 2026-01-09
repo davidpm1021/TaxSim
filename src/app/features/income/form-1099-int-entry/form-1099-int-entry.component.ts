@@ -435,12 +435,15 @@ export class Form1099INTEntryComponent {
   }
 
   onContinue(): void {
-    // Go to next income type if selected, otherwise to summary
+    // Go to next income type if selected, then Schedule C for self-employment, otherwise to summary
     const income = this.sessionStorage.taxReturn().income;
     if (income.hasDividendIncome) {
       this.navigation.navigateTo('/income/1099-div');
     } else if (income.has1099KIncome) {
       this.navigation.navigateTo('/income/1099-k');
+    } else if (income.has1099Income) {
+      // Has 1099-NEC income, go to Schedule C for expenses
+      this.navigation.navigateTo('/income/schedule-c');
     } else {
       this.navigation.navigateTo('/income/summary');
     }

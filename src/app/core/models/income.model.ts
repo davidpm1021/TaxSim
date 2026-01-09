@@ -3,6 +3,7 @@ import { Form1099INT } from './form-1099-int.model';
 import { Form1099DIV } from './form-1099-div.model';
 import { Form1099K } from './form-1099-k.model';
 import { W2 } from './w2.model';
+import { ScheduleC, createEmptyScheduleC } from './schedule-c.model';
 
 export interface Income {
   hasW2Income: boolean;
@@ -15,6 +16,8 @@ export interface Income {
   form1099Ints: Form1099INT[];
   form1099Divs: Form1099DIV[];
   form1099Ks: Form1099K[];
+  // Self-employment expenses (Schedule C)
+  scheduleC: ScheduleC | null;
 }
 
 export function createEmptyIncome(): Income {
@@ -29,5 +32,6 @@ export function createEmptyIncome(): Income {
     form1099Ints: [],
     form1099Divs: [],
     form1099Ks: [],
+    scheduleC: null,
   };
 }

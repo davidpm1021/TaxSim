@@ -64,6 +64,20 @@ export const SELF_EMPLOYMENT_TAX = {
   deductionRate: 0.5, // 50% of SE tax is deductible
 };
 
+// Standard mileage rate for business use (2025)
+export const MILEAGE_RATE = 0.70; // $0.70 per mile
+
+// Quarterly estimated tax due dates
+export const ESTIMATED_TAX_DUE_DATES = [
+  { quarter: 1, dueDate: 'April 15', periodCovered: 'Jan 1 - Mar 31' },
+  { quarter: 2, dueDate: 'June 15', periodCovered: 'Apr 1 - May 31' },
+  { quarter: 3, dueDate: 'September 15', periodCovered: 'Jun 1 - Aug 31' },
+  { quarter: 4, dueDate: 'January 15 (next year)', periodCovered: 'Sep 1 - Dec 31' },
+];
+
+// Estimated tax threshold - you should make quarterly payments if you expect to owe this much
+export const ESTIMATED_TAX_THRESHOLD = 1000;
+
 // Child Tax Credit
 export const CHILD_TAX_CREDIT = {
   maxPerChild: 2000,

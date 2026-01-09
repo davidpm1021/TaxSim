@@ -139,6 +139,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'schedule-c',
+        loadComponent: () =>
+          import('./features/income/schedule-c-entry/schedule-c-entry.component').then(
+            (m) => m.ScheduleCEntryComponent
+          ),
+      },
+      {
+        path: 'estimated-tax',
+        loadComponent: () =>
+          import('./features/income/estimated-tax-calculator/estimated-tax-calculator.component').then(
+            (m) => m.EstimatedTaxCalculatorComponent
+          ),
+      },
+      {
         path: 'summary',
         loadComponent: () =>
           import('./features/income/income-summary/income-summary.component').then(

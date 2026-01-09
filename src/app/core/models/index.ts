@@ -7,6 +7,7 @@ export * from './form-1099-int.model';
 export * from './form-1099-div.model';
 export * from './form-1099-k.model';
 export * from './form-1098-t.model';
+export * from './schedule-c.model';
 export * from './income.model';
 export * from './adjustments.model';
 export * from './deductions.model';
