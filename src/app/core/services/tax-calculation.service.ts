@@ -15,7 +15,10 @@ import {
   SELF_EMPLOYMENT_TAX,
   CHILD_TAX_CREDIT,
   EITC_PARAMS,
+  AOTC,
+  LLC,
 } from '@core/constants';
+import { StudentEducationInfo, EducationCreditType } from '@core/models';
 
 export interface SelfEmploymentTaxResult {
   selfEmploymentTax: number;
@@ -25,6 +28,19 @@ export interface SelfEmploymentTaxResult {
 export interface ChildTaxCreditResult {
   total: number;
   refundable: number;
+}
+
+export interface EducationCreditResult {
+  creditType: EducationCreditType;
+  creditAmount: number;
+  refundableAmount: number;
+  qualifiedExpenses: number;
+  isEligibleForAOTC: boolean;
+  isEligibleForLLC: boolean;
+  aotcAmount: number;
+  llcAmount: number;
+  recommendedCredit: EducationCreditType;
+  ineligibilityReasons: string[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -199,6 +215,178 @@ export class TaxCalculationService {
     }
 
     return Math.round(credit * 100) / 100;
+  }
+
+  /**
+   * Calculate American Opportunity Tax Credit (AOTC)
+   * - Up to $2,500 per student
+   * - 100% of first $2,000 + 25% of next $2,000
+   * - 40% is refundable (up to $1,000)
+   * - First 4 years of post-secondary education only
+   */
+  calculateAOTC(
+    qualifiedExpenses: number,
+    agi: number,
+    filingStatus: FilingStatus,
+    studentInfo: StudentEducationInfo
+  ): { credit: number; refundable: number; eligible: boolean; reasons: string[] } {
+    const reasons: string[] = [];
+
+    // Check eligibility
+    if (studentInfo.hasCompletedFourYears) {
+      reasons.push('Student has completed 4 years of post-secondary education');
+    }
+    if (studentInfo.hasFelonyDrugConviction) {
+      reasons.push('Student has a felony drug conviction');
+    }
+    if (!studentInfo.pursuingDegree) {
+      reasons.push('Student is not pursuing a degree or credential');
+    }
+    if (studentInfo.enrollmentStatus === 'less-than-half-time') {
+      reasons.push('Student must be enrolled at least half-time');
+    }
+
+    // Check income limits
+    const phaseOutStart = AOTC.phaseOutStart[filingStatus];
+    const phaseOutEnd = AOTC.phaseOutEnd[filingStatus];
+    if (agi >= phaseOutEnd) {
+      reasons.push('Income exceeds limit for AOTC');
+    }
+
+    if (reasons.length > 0 || qualifiedExpenses <= 0) {
+      return { credit: 0, refundable: 0, eligible: false, reasons };
+    }
+
+    // Calculate base credit
+    // 100% of first $2,000 + 25% of next $2,000 = max $2,500
+    let credit = 0;
+    const firstTier = Math.min(qualifiedExpenses, AOTC.firstTierExpenses);
+    credit += firstTier * AOTC.firstTierRate;
+
+    if (qualifiedExpenses > AOTC.firstTierExpenses) {
+      const secondTier = Math.min(
+        qualifiedExpenses - AOTC.firstTierExpenses,
+        AOTC.secondTierExpenses
+      );
+      credit += secondTier * AOTC.secondTierRate;
+    }
+
+    // Apply phase-out if applicable
+    if (agi > phaseOutStart) {
+      const phaseOutRange = phaseOutEnd - phaseOutStart;
+      const excessIncome = agi - phaseOutStart;
+      const reductionRatio = Math.min(1, excessIncome / phaseOutRange);
+      credit = credit * (1 - reductionRatio);
+    }
+
+    credit = Math.round(credit * 100) / 100;
+
+    // Calculate refundable portion (40% up to $1,000)
+    const refundable = Math.min(credit * AOTC.refundableRate, AOTC.maxRefundable);
+
+    return { credit, refundable: Math.round(refundable * 100) / 100, eligible: true, reasons: [] };
+  }
+
+  /**
+   * Calculate Lifetime Learning Credit (LLC)
+   * - Up to $2,000 per tax return (not per student)
+   * - 20% of first $10,000 qualified expenses
+   * - NOT refundable
+   * - No limit on years of education
+   */
+  calculateLLC(
+    qualifiedExpenses: number,
+    agi: number,
+    filingStatus: FilingStatus
+  ): { credit: number; eligible: boolean; reasons: string[] } {
+    const reasons: string[] = [];
+
+    // Check income limits
+    const phaseOutStart = LLC.phaseOutStart[filingStatus];
+    const phaseOutEnd = LLC.phaseOutEnd[filingStatus];
+    if (agi >= phaseOutEnd) {
+      reasons.push('Income exceeds limit for LLC');
+      return { credit: 0, eligible: false, reasons };
+    }
+
+    if (qualifiedExpenses <= 0) {
+      return { credit: 0, eligible: false, reasons: ['No qualified education expenses'] };
+    }
+
+    // Calculate base credit (20% of first $10,000)
+    const eligibleExpenses = Math.min(qualifiedExpenses, LLC.maxQualifiedExpenses);
+    let credit = eligibleExpenses * LLC.creditRate;
+
+    // Apply phase-out if applicable
+    if (agi > phaseOutStart) {
+      const phaseOutRange = phaseOutEnd - phaseOutStart;
+      const excessIncome = agi - phaseOutStart;
+      const reductionRatio = Math.min(1, excessIncome / phaseOutRange);
+      credit = credit * (1 - reductionRatio);
+    }
+
+    credit = Math.round(credit * 100) / 100;
+
+    return { credit, eligible: true, reasons: [] };
+  }
+
+  /**
+   * Calculate education credits and recommend the better option
+   * Note: You can only claim ONE education credit per student per year
+   */
+  calculateEducationCredits(
+    qualifiedExpenses: number,
+    agi: number,
+    filingStatus: FilingStatus,
+    studentInfo: StudentEducationInfo,
+    selectedCredit: EducationCreditType = 'none'
+  ): EducationCreditResult {
+    const aotcResult = this.calculateAOTC(qualifiedExpenses, agi, filingStatus, studentInfo);
+    const llcResult = this.calculateLLC(qualifiedExpenses, agi, filingStatus);
+
+    // Determine recommended credit (AOTC is usually better due to refundability)
+    let recommendedCredit: EducationCreditType = 'none';
+    if (aotcResult.eligible && aotcResult.credit > 0) {
+      recommendedCredit = 'aotc';
+    } else if (llcResult.eligible && llcResult.credit > 0) {
+      recommendedCredit = 'llc';
+    }
+
+    // Use selected credit if valid, otherwise use recommended
+    const effectiveCredit = selectedCredit !== 'none' ? selectedCredit : recommendedCredit;
+
+    let creditAmount = 0;
+    let refundableAmount = 0;
+
+    if (effectiveCredit === 'aotc' && aotcResult.eligible) {
+      creditAmount = aotcResult.credit;
+      refundableAmount = aotcResult.refundable;
+    } else if (effectiveCredit === 'llc' && llcResult.eligible) {
+      creditAmount = llcResult.credit;
+      refundableAmount = 0; // LLC is not refundable
+    }
+
+    // Collect all ineligibility reasons
+    const ineligibilityReasons: string[] = [];
+    if (!aotcResult.eligible) {
+      ineligibilityReasons.push(...aotcResult.reasons.map(r => `AOTC: ${r}`));
+    }
+    if (!llcResult.eligible) {
+      ineligibilityReasons.push(...llcResult.reasons.map(r => `LLC: ${r}`));
+    }
+
+    return {
+      creditType: effectiveCredit,
+      creditAmount,
+      refundableAmount,
+      qualifiedExpenses,
+      isEligibleForAOTC: aotcResult.eligible,
+      isEligibleForLLC: llcResult.eligible,
+      aotcAmount: aotcResult.credit,
+      llcAmount: llcResult.credit,
+      recommendedCredit,
+      ineligibilityReasons,
+    };
   }
 
   /**

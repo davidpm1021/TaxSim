@@ -60,6 +60,15 @@ export const SECTIONS: Section[] = [
     ],
   },
   {
+    id: 'education',
+    label: 'Education',
+    path: '/education',
+    subsections: [
+      { id: '1098-t-entry', label: '1098-T Entry', path: '/education/1098-t' },
+      { id: 'education-credits', label: 'Education Credits', path: '/education/credits' },
+    ],
+  },
+  {
     id: 'credits',
     label: 'Credits',
     path: '/credits',

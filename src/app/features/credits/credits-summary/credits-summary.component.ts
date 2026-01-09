@@ -600,8 +600,9 @@ export class CreditsSummaryComponent implements OnInit {
     );
     this.earnedIncomeCredit.set(eitc);
 
-    // Save credits to session storage
-    this.sessionStorage.updateCredits(() => ({
+    // Save credits to session storage (preserve education credits)
+    this.sessionStorage.updateCredits((current) => ({
+      ...current,
       childTaxCredit: ctcResult.total,
       childTaxCreditRefundable: ctcResult.refundable,
       earnedIncomeCredit: eitc,

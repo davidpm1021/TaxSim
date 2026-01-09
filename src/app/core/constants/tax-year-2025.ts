@@ -195,6 +195,45 @@ export const EITC_PARAMS: Record<FilingStatus, Record<number, EITCParams>> = {
 // Investment income limit for EITC
 export const EITC_INVESTMENT_INCOME_LIMIT = 11600;
 
+// American Opportunity Tax Credit (AOTC)
+export const AOTC = {
+  maxCredit: 2500,
+  firstTierExpenses: 2000,   // 100% of first $2,000
+  firstTierRate: 1.0,
+  secondTierExpenses: 2000,  // 25% of next $2,000
+  secondTierRate: 0.25,
+  refundableRate: 0.40,      // 40% is refundable (up to $1,000)
+  maxRefundable: 1000,
+  maxYears: 4,               // First 4 years of post-secondary education
+  phaseOutStart: {
+    'single': 80000,
+    'married-jointly': 160000,
+    'head-of-household': 80000,
+  } as Record<FilingStatus, number>,
+  phaseOutEnd: {
+    'single': 90000,
+    'married-jointly': 180000,
+    'head-of-household': 90000,
+  } as Record<FilingStatus, number>,
+};
+
+// Lifetime Learning Credit (LLC)
+export const LLC = {
+  maxCredit: 2000,
+  maxQualifiedExpenses: 10000, // 20% of first $10,000
+  creditRate: 0.20,
+  phaseOutStart: {
+    'single': 80000,
+    'married-jointly': 160000,
+    'head-of-household': 80000,
+  } as Record<FilingStatus, number>,
+  phaseOutEnd: {
+    'single': 90000,
+    'married-jointly': 180000,
+    'head-of-household': 90000,
+  } as Record<FilingStatus, number>,
+};
+
 // US States (for W-2 Box 15)
 export const US_STATES = [
   { code: 'AL', name: 'Alabama' },

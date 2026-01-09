@@ -140,6 +140,26 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'education',
+    children: [
+      { path: '', redirectTo: '1098-t', pathMatch: 'full' },
+      {
+        path: '1098-t',
+        loadComponent: () =>
+          import('./features/education/form-1098-t-entry/form-1098-t-entry.component').then(
+            (m) => m.Form1098TEntryComponent
+          ),
+      },
+      {
+        path: 'credits',
+        loadComponent: () =>
+          import('./features/education/education-credits/education-credits.component').then(
+            (m) => m.EducationCreditsComponent
+          ),
+      },
+    ],
+  },
+  {
     path: 'credits',
     loadComponent: () =>
       import('./features/credits/credits-summary/credits-summary.component').then(

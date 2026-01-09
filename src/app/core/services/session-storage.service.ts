@@ -77,6 +77,14 @@ export class SessionStorageService {
     });
   }
 
+  updateEducation(updater: (current: TaxReturn['education']) => TaxReturn['education']): void {
+    const current = this._taxReturn();
+    this.save({
+      ...current,
+      education: updater(current.education),
+    });
+  }
+
   updateCredits(updater: (current: TaxReturn['credits']) => TaxReturn['credits']): void {
     const current = this._taxReturn();
     this.save({

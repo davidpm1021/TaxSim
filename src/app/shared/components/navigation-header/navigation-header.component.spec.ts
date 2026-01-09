@@ -37,7 +37,7 @@ describe('NavigationHeaderComponent', () => {
 
   it('should display step counter', () => {
     const counter = fixture.nativeElement.querySelector('.counter-text');
-    expect(counter.textContent.trim()).toBe('1/7');
+    expect(counter.textContent.trim()).toBe('1/8'); // 8 sections: Welcome, Personal Info, Income, Deductions, Education, Credits, Review, Results
   });
 
   it('should show all step indicators', () => {
