@@ -95,11 +95,11 @@ describe('SessionStorageService', () => {
   it('should update credits', () => {
     service.updateCredits((current) => ({
       ...current,
-      childTaxCredit: 2000,
+      childTaxCredit: 2200,
     }));
 
     const result = service.taxReturn();
-    expect(result.credits.childTaxCredit).toBe(2000);
+    expect(result.credits.childTaxCredit).toBe(2200);
   });
 
   it('should update calculation', () => {

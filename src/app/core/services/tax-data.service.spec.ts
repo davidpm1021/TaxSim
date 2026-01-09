@@ -76,8 +76,8 @@ describe('TaxDataService', () => {
   describe('getChildTaxCreditInfo', () => {
     it('should return correct CTC info', () => {
       const info = service.getChildTaxCreditInfo();
-      expect(info.maxPerChild).toBe(2000);
-      expect(info.refundableMax).toBe(1700);
+      expect(info.maxPerChild).toBe(2200);
+      expect(info.refundableMax).toBe(1900);
       expect(info.maxChildAge).toBe(16);
     });
   });

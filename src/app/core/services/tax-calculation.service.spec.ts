@@ -233,21 +233,21 @@ describe('TaxCalculationService', () => {
       expect(result).toEqual({ total: 0, refundable: 0 });
     });
 
-    it('should return $2,000 for one qualifying child under 17', () => {
+    it('should return $2,200 for one qualifying child under 17', () => {
       const dependents = [
         { id: '1', firstName: 'Child', relationship: 'child' as const, age: 10, livedWithFiler: true },
       ];
       const result = service.calculateChildTaxCredit(dependents, 50000, 'single');
-      expect(result.total).toBe(2000);
+      expect(result.total).toBe(2200);
     });
 
-    it('should return $4,000 for two qualifying children', () => {
+    it('should return $4,400 for two qualifying children', () => {
       const dependents = [
         { id: '1', firstName: 'Child1', relationship: 'child' as const, age: 10, livedWithFiler: true },
         { id: '2', firstName: 'Child2', relationship: 'child' as const, age: 8, livedWithFiler: true },
       ];
       const result = service.calculateChildTaxCredit(dependents, 50000, 'single');
-      expect(result.total).toBe(4000);
+      expect(result.total).toBe(4400);
     });
 
     it('should not count children 17 or older', () => {
@@ -272,9 +272,9 @@ describe('TaxCalculationService', () => {
       ];
       // $210,000 income, $10,000 over threshold
       // Phase out: $50 per $1,000 = $500 reduction
-      // CTC: $2,000 - $500 = $1,500
+      // CTC: $2,200 - $500 = $1,700
       const result = service.calculateChildTaxCredit(dependents, 210000, 'single');
-      expect(result.total).toBe(1500);
+      expect(result.total).toBe(1700);
     });
 
     it('should phase out for MFJ over $400,000', () => {
@@ -283,9 +283,9 @@ describe('TaxCalculationService', () => {
       ];
       // $420,000 income, $20,000 over threshold
       // Phase out: $50 per $1,000 = $1,000 reduction
-      // CTC: $2,000 - $1,000 = $1,000
+      // CTC: $2,200 - $1,000 = $1,200
       const result = service.calculateChildTaxCredit(dependents, 420000, 'married-jointly');
-      expect(result.total).toBe(1000);
+      expect(result.total).toBe(1200);
     });
 
     it('should not go below 0', () => {
@@ -294,26 +294,26 @@ describe('TaxCalculationService', () => {
       ];
       // $300,000 income for single, $100,000 over threshold
       // Phase out: $50 per $1,000 = $5,000 reduction
-      // CTC: $2,000 - $5,000 = -$3,000 -> $0
+      // CTC: $2,200 - $5,000 = -$2,800 -> $0
       const result = service.calculateChildTaxCredit(dependents, 300000, 'single');
       expect(result.total).toBe(0);
     });
 
-    it('should cap refundable portion at $1,700 per child', () => {
+    it('should cap refundable portion at $1,900 per child', () => {
       const dependents = [
         { id: '1', firstName: 'Child', relationship: 'child' as const, age: 10, livedWithFiler: true },
       ];
       const result = service.calculateChildTaxCredit(dependents, 50000, 'single');
-      expect(result.refundable).toBe(1700);
+      expect(result.refundable).toBe(1900);
     });
 
     it('should cap total refundable at actual credit amount', () => {
       const dependents = [
         { id: '1', firstName: 'Child', relationship: 'child' as const, age: 10, livedWithFiler: true },
       ];
-      // With phaseout reducing credit to $1,500
+      // With phaseout reducing credit to $1,700
       const result = service.calculateChildTaxCredit(dependents, 210000, 'single');
-      expect(result.refundable).toBe(1500); // Capped at total credit, not $1,700
+      expect(result.refundable).toBe(1700); // Capped at total credit, not $1,900
     });
   });
 
@@ -463,11 +463,11 @@ describe('TaxCalculationService', () => {
 
       const result = service.calculateFullReturn(taxReturn);
 
-      expect(result.totalCredits).toBe(2000);
-      // Tax: ~$3,961.50 - $2,000 CTC = ~$1,961.50
-      expect(result.totalTax).toBeCloseTo(1961.5, 2);
-      // Refund: $6,000 - $1,961.50 = $4,038.50
-      expect(result.refundOrOwed).toBeCloseTo(4038.5, 2);
+      expect(result.totalCredits).toBe(2200);
+      // Tax: ~$3,961.50 - $2,200 CTC = ~$1,761.50
+      expect(result.totalTax).toBeCloseTo(1761.5, 2);
+      // Refund: $6,000 - $1,761.50 = $4,238.50
+      expect(result.refundOrOwed).toBeCloseTo(4238.5, 2);
     });
 
     it('should use itemized deductions when larger', () => {

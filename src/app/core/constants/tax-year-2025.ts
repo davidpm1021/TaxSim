@@ -78,10 +78,10 @@ export const ESTIMATED_TAX_DUE_DATES = [
 // Estimated tax threshold - you should make quarterly payments if you expect to owe this much
 export const ESTIMATED_TAX_THRESHOLD = 1000;
 
-// Child Tax Credit
+// Child Tax Credit (2025)
 export const CHILD_TAX_CREDIT = {
-  maxPerChild: 2000,
-  refundableMax: 1700,
+  maxPerChild: 2200,
+  refundableMax: 1900,
   childMaxAge: 16, // Under 17
   phaseoutThreshold: {
     'single': 200000,
